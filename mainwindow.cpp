@@ -68,13 +68,26 @@ const char * QscilexerCppAttach::keywords(int set) const
 MainWindow::MainWindow()
 {
     textEdit = new QsciScintilla;
-    setCentralWidget(textEdit);
 
-    keywordDeal();//自定义设置
+    QWidget* mainWidget = new QWidget;      //主窗口
+
+
+
+    setCentralWidget(textEdit);
     createActions();//点击按钮与函数进行绑定
     createMenus();//菜单栏
     createToolBars();//工具栏
     createStatusBar();//状态栏
+
+    mainLayout = new QVBoxLayout;
+    setTextEdit();//代码编辑区
+    initLogtext();//编译信息提示区域
+
+    //设置layout布局
+    mainLayout->addWidget(textEdit, 0);
+    mainLayout->addWidget(LogText);
+    mainWidget->setLayout(mainLayout);
+    this->setCentralWidget(mainWidget);
 
     readSettings();
 
@@ -173,7 +186,7 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     }
     else
     {
-        logInfo = "--编译失败--\r\n"+ logInfo;
+        logInfo = "--编译失败：错误信息如下--\r\n"+ logInfo;
         isSucess = false;
         //标出错误行数
 //        int errorline = GeterrorLine(logInfo);
@@ -181,10 +194,9 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     }
 
     //将编译信息填写到编译信息框
-//    QApplication::setOverrideCursor(Qt::WaitCursor);
-//    LogText->setText(logInfo);
-//    QApplication::restoreOverrideCursor();
-    setStatusTip(logInfo.toStdString().data());
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    LogText->setText(logInfo);
+    QApplication::restoreOverrideCursor();
 
     return isSucess;
 }
@@ -198,7 +210,7 @@ void MainWindow::mycompile(){
         if(p == NULL) return ;
 
         QString cppfile = filename +".c";
-        qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
+        //qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
         FILE *p1 = fopen(cppfile.toStdString().data(),"w");
         if(p1 == NULL) return ;
 
@@ -262,8 +274,8 @@ void MainWindow::on_margin_clicked(int margin, int line, Qt::KeyboardModifiers s
         }
     }
 }
-//自定义设置部分
-void MainWindow::keywordDeal()
+//代码编辑区
+void MainWindow::setTextEdit()
 {
     textLexer = new QscilexerCppAttach;                                             //绑定Cpp的关键字
     textLexer->setColor(QColor(Qt:: green),QsciLexerCPP::CommentLine);              //设置自带的注释行为绿色
@@ -341,6 +353,18 @@ void MainWindow::keywordDeal()
 
     /****************以上为zjm添加的测试功能********************/
 }
+void MainWindow::initLogtext()
+{
+    LogText = new QTextEdit;
+    LogText->setReadOnly(true);     //设置日志编辑器不可编辑       //todo 考虑这里控制台？？
+
+    LogText->setFixedHeight(115);
+    LogText->setText(tr("--编译信息显示区域--"));
+//    mainLayout->addWidget(LogText);
+}
+
+
+
 //绑定函数+绑定图片+快捷键+状态栏提示 ok
 void MainWindow::createActions()
 {
@@ -457,12 +481,6 @@ void MainWindow::createActions()
     connect(textEdit, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
 
-
-    /*
-     *      ui->textEdit->findFirst(expr,true,false,true,true);
-     *      ui->textEdit->findNext();
-     *      ui->textEdit->replace(replaceStr);
-     */
 }
 //创建菜单栏 ok
 void MainWindow::createMenus()

@@ -66,7 +66,8 @@ public slots:
     void handleReplaceSelect(QString, QString, bool, bool, bool);
 
 private:
-    void keywordDeal();
+    void setTextEdit();                             //代码编辑区
+    void initLogtext();                             //编辑信息提示区域
     void createActions();
     void createMenus();
     void createToolBars();
@@ -80,10 +81,11 @@ private:
     void setCurrentFileName(const QString &fileName);
     //QString strippedName(const QString &fullFileName);
 
-    QsciScintilla *textEdit;
+    QsciScintilla *textEdit;            //代码编辑框
     //QscilexerCppAttach *textLexer;
-    QsciLexer *textLexer;
-    QString curFile;
+    QsciLexer *textLexer;               //语法分析器
+    QTextEdit *LogText;                 //build log text
+    QString curFile;                    //当前打开文件的路径
 
     /***菜单栏部分***/
 
@@ -125,6 +127,9 @@ private:
     //查找和替换窗口
     FindDialog findDialog;
     ReplaceDialog replaceDialog;
+
+    //QgridLayout
+    QVBoxLayout *mainLayout;    //格子布局
 };
 
 #endif
