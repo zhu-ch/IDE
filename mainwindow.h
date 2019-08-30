@@ -24,6 +24,7 @@
 
 #include <QMainWindow>
 #include <Qsci/qscilexercpp.h>
+#include <QDialog>
 #include "finddialog.h"
 #include "replacedialog.h"
 
@@ -66,6 +67,9 @@ public slots:
     void handleFindByTarget(QString, bool, bool);
     void handleReplaceSelect(QString, QString, bool, bool, bool);
 
+    void showColor();
+    void showFont();
+
 private:
     void setTextEdit();                             //代码编辑区
     void initLogtext();                             //编辑信息提示区域
@@ -83,6 +87,8 @@ private:
     //QString strippedName(const QString &fullFileName);
 
     QsciScintilla *textEdit;            //代码编辑框
+    //QFrame *colorFrame;                 //样式 大小
+    //QLineEdit *fontLineEdit;            //颜色
     //QscilexerCppAttach *textLexer;
     QsciLexer *textLexer;               //语法分析器
     QTextEdit *LogText;                 //build log text
@@ -120,10 +126,15 @@ private:
     QAction *compileAct;//编译
     QAction *runAct;//运行
 
+    //格式
+    QMenu *formMenu;
+    QAction *fontAct;//字体大小和样式
+    QAction *colorAct;//字体颜色
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QToolBar *compileToolBar;
+    QToolBar *formToolBar;
 
     //查找和替换窗口
     FindDialog findDialog;

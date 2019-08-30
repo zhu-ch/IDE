@@ -22,6 +22,9 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDialog>
+#include <QFontDialog>
+#include <QColorDialog>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -370,6 +373,7 @@ void MainWindow::setTextEdit()
 
     /****************以上为zjm添加的测试功能********************/
 }
+//初始化编译信息显示区域
 void MainWindow::initLogtext()
 {
     LogText = new QTextEdit;
@@ -379,9 +383,6 @@ void MainWindow::initLogtext()
     LogText->setText(tr("--编译信息显示区域--"));
 //    mainLayout->addWidget(LogText);
 }
-
-
-
 //绑定函数+绑定图片+快捷键+状态栏提示 ok
 void MainWindow::createActions()
 {
@@ -479,6 +480,17 @@ void MainWindow::createActions()
     runAct->setStatusTip(tr("Find the specified content in current file"));
     connect(runAct, SIGNAL(triggered()), this, SLOT(mycompile()));
 
+    //字体样式和大小
+    fontAct = new QAction(QIcon(":/images/font.png"),tr("&Font"),this);
+    fontAct->setShortcut(tr("Ctrl+Shift+F"));
+    fontAct->setStatusTip(tr("change the style and size of the font in current file"));
+    connect(fontAct, SIGNAL(triggered()), this, SLOT(showFont()));
+
+    //字体颜色
+    colorAct = new QAction(QIcon(":/images/color.png"),tr("&Color"),this);
+    colorAct->setShortcut(tr("Ctrl+Shift+C"));
+    colorAct->setStatusTip(tr("change the color of the font in current file"));
+    connect(colorAct, SIGNAL(triggered()), this, SLOT(showColor()));
 
     //关于
     aboutAct = new QAction(tr("&About"), this);
@@ -533,6 +545,11 @@ void MainWindow::createMenus()
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
+
+    //格式
+    formMenu = menuBar()->addMenu(tr("&Form"));
+    formMenu->addAction(fontAct);
+    formMenu->addAction(colorAct);
 }
 //创建工具栏 ok
 void MainWindow::createToolBars()
@@ -558,6 +575,11 @@ void MainWindow::createToolBars()
     compileToolBar = addToolBar(tr("Compile"));
     compileToolBar->addAction(compileAct);
     compileToolBar->addAction(runAct);
+
+    //格式
+    formToolBar = addToolBar(tr("Form"));
+    formToolBar->addAction(fontAct);
+    formToolBar->addAction(colorAct);
 }
 //创建状态栏 ok
 void MainWindow::createStatusBar()
@@ -661,8 +683,7 @@ void MainWindow::setCurrentFileName(const QString &fileName)
     setWindowTitle(tr("%1[*] - %2").arg(TitleName).arg(tr("TextApplication")));//显示在标题
 }
 
-
-//自定义槽函数
+//关于查找替换的部分 - 槽函数
 void MainWindow::showReplace()
 {
     replaceDialog.show();
@@ -712,5 +733,29 @@ void MainWindow::handleReplaceSelect(QString target, QString to, bool cs, bool f
 
         msg.setWindowFlags(Qt::WindowStaysOnTopHint);
         msg.exec();
+    }
+}
+
+//关于字体部分 - 槽函数
+
+void MainWindow::showFont()
+{
+    bool ok = false;
+    QFont f = QFontDialog::getFont(&ok);
+    if (ok)
+    {
+        qDebug()<<f.toString().data();
+        textEdit->setFont(f);
+        //fontLineEdit->setFont(f);
+    }
+}
+
+void MainWindow::showColor()
+{
+    QColor c = QColorDialog::getColor(Qt::blue);
+    if (c.isValid())
+    {
+        //colorFrame->setPalette(QPalette(c));
+        textEdit->setColor(c);
     }
 }
