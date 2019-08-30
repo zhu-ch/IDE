@@ -39,6 +39,7 @@
 #include <QTextStream>
 #include <QToolBar>
 #include <QDebug>
+#include<set>
 
 //QsciScintilla本体
 #include<Qsci/qsciscintilla.h>
@@ -133,7 +134,6 @@ void MainWindow::wheelEvent(QWheelEvent *event)
         }
     }
 }
-
 //新建 ok
 void MainWindow::newFile()
 {
@@ -467,6 +467,12 @@ void MainWindow::createActions()
     findAct->setStatusTip(tr("Find the specified content in current file"));
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFind()));
 
+    //change icon
+    changeAct = new QAction(QIcon(":/images/change.png"),tr("&Change"),this);
+    changeAct->setShortcut(tr("F2"));
+    changeAct->setStatusTip(tr("Change the name of the selected variable"));
+    connect(changeAct, SIGNAL(triggered()),this,SLOT(change_name()));
+
 
     //编译
     compileAct = new QAction(QIcon(":/images/compile.png"),tr("&Compile"),this);
@@ -533,6 +539,7 @@ void MainWindow::createMenus()
     editMenu->addAction(redoAct);
     editMenu->addAction(replaceAct);
     editMenu->addAction(findAct);
+    editMenu->addAction(changeAct);
 
 
     //编译运行
@@ -570,6 +577,7 @@ void MainWindow::createToolBars()
     editToolBar->addAction(redoAct);
     editToolBar->addAction(findAct);
     editToolBar->addAction(replaceAct);
+    editToolBar->addAction(changeAct);
 
     //编译运行
     compileToolBar = addToolBar(tr("Compile"));
@@ -758,4 +766,81 @@ void MainWindow::showColor()
         //colorFrame->setPalette(QPalette(c));
         textEdit->setColor(c);
     }
+}
+
+
+/*------------->F2 Slot<--------------*/
+//更改变量名字
+
+void MainWindow::change_name(){
+
+    int line = 0, index = 0;
+    textEdit->getCursorPosition(&line,&index);//get cursor postion
+
+
+    variableName = textEdit->wordAtLineIndex(line,index);//get the word around the cursor
+    //qDebug() << variableName<<variableName.size();
+
+    if(variableName.size()<=0){//todo   how to know this name isn't keyword and string??
+        QMessageBox *box = new QMessageBox("Notice",
+                    "Invalid variableName.",
+                    QMessageBox::NoIcon,
+                    QMessageBox::Ok | QMessageBox::Default,
+                    QMessageBox::Cancel | QMessageBox::Escape,
+                    0
+                    );
+      box->setModal(true);
+      box->show();
+
+      box->exec();
+    }
+    else{
+        qDebug()<<"this";
+        //QLineEdit *lineEdit = new QLineEdit();
+        lineEdit = new QLineEdit();
+        lineEdit->setParent(textEdit);
+        lineEdit->resize(150,30);
+        lineEdit->move(textEdit->width()-150,0);
+        lineEdit->show();
+        connect(lineEdit,SIGNAL(returnPressed()),this,SLOT(chang_all_name()));
+    }
+}
+
+void MainWindow::chang_all_name(){
+        std::set<char> chr;
+        if(chr.empty()) chr.clear();
+        for(int i=0;i<26;i++){
+            chr.insert(65+i);
+            chr.insert(97+i);
+        }
+        for(int i=0;i<10;i++){
+            chr.insert('0'+i);
+        }
+        chr.insert('_');
+
+        QString rplc = lineEdit->text();
+
+        while(textEdit->findFirst(variableName,0,1,1,1)){
+            textEdit->replace(rplc) ;
+        }
+//        QMessageBox *box = new QMessageBox("Notice",
+//                    "Done.",
+//                    QMessageBox::NoIcon,
+//                    QMessageBox::Ok | QMessageBox::Default,
+//                    QMessageBox::Cancel | QMessageBox::Escape,
+//                    0
+//                    );
+        QMessageBox box;
+        box.setWindowTitle(tr("Information"));
+        box.setIcon(QMessageBox::Information);
+        box.setText(tr("Rename success!"));
+        box.setStandardButtons(QMessageBox::Yes);
+          //box->setModal(true);
+
+          delete lineEdit;
+          lineEdit = nullptr;
+          box.show();
+
+          box.exec();
+
 }

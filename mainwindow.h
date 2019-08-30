@@ -49,6 +49,7 @@ public:
 protected:
     void closeEvent(QCloseEvent *event);
     void wheelEvent(QWheelEvent *event);
+    //void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
     void newFile();
@@ -66,6 +67,9 @@ public slots:
     void showFind();
     void handleFindByTarget(QString, bool, bool);
     void handleReplaceSelect(QString, QString, bool, bool, bool);
+
+    void change_name();//F2
+    void chang_all_name();//change
 
     void showColor();
     void showFont();
@@ -114,6 +118,7 @@ private:
     QAction *redoAct;//重做
     QAction *replaceAct;//替换
     QAction *findAct;//查找
+    QAction *changeAct;//更改变量
 
     //帮助
     QMenu *helpMenu;
@@ -142,6 +147,10 @@ private:
 
     //QgridLayout
     QVBoxLayout *mainLayout;    //格子布局
+
+    //变量重命名相关：因为没法实现匿名函数所以需要的变量
+    QString variableName;
+    QLineEdit *lineEdit;
 };
 
 #endif
