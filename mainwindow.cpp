@@ -89,9 +89,12 @@ MainWindow::MainWindow()
     mainWidget->setLayout(mainLayout);
     this->setCentralWidget(mainWidget);
 
+
     readSettings();
 
     connect(textEdit, SIGNAL(textChanged()),this, SLOT(documentWasModified()));//点击断点区域 绑定有关断点的函数
+
+    connect(textEdit,SIGNAL(cursorPositionChanged(int,int)),this,SLOT(do_cursorChanged()));//实时显示当前光标所在行函数
 
     setCurrentFileName("");
 
@@ -274,6 +277,20 @@ void MainWindow::on_margin_clicked(int margin, int line, Qt::KeyboardModifiers s
         }
     }
 }
+void MainWindow::do_cursorChanged(){
+    int ColNum;
+    int RowNum;
+    textEdit->getCursorPosition(&ColNum,&RowNum);
+
+    QString Tip = QString("Current ColNum： ")+QString::number(ColNum)+QString("     Current RowNum： ")+QString::number(RowNum);////////////////////////////////
+    setStatusTip(Tip);
+    //const QTextCursor qcursor = textEdit->textCursor();
+    //int ColNum = qcursor.columnNumber();
+    //int RowNum = qcursor.blockCount();
+    //int row = textEdit->document()->blockCount();
+
+}
+
 //代码编辑区
 void MainWindow::setTextEdit()
 {
@@ -546,7 +563,6 @@ void MainWindow::createToolBars()
 void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
-    //TODO 添加当前行号的提示
 }
 //读 - 配置文件
 void MainWindow::readSettings()

@@ -59,6 +59,7 @@ public slots:
     void about();
     void documentWasModified();
     void on_margin_clicked(int, int, Qt::KeyboardModifiers);
+    void do_cursorChanged();
 
     void showReplace();
     void showFind();
