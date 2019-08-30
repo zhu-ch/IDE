@@ -181,7 +181,7 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     //根据log文件的空与否判断编译是否有误
     if (logInfo.isEmpty())
     {
-        logInfo = "--编译成功--";
+        logInfo = "--编译成功 在控制台执行程序--";
         isSucess = true;
     }
     else
