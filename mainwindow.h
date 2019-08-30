@@ -35,6 +35,7 @@ class QsciScintilla;
 class QscilexerCppAttach : public QsciLexerCPP
 {
     Q_OBJECT
+
 public:
     const char *keywords(int set) const;
 };
@@ -49,7 +50,6 @@ public:
 protected:
     void closeEvent(QCloseEvent *event);
     void wheelEvent(QWheelEvent *event);
-    //void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
     void newFile();

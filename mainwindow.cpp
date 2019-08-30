@@ -39,6 +39,8 @@
 #include <QTextStream>
 #include <QToolBar>
 #include <QDebug>
+#include <QKeyEvent>
+#include <Qsci/qsciscintilla.h>
 #include<set>
 
 //QsciScintilla本体
@@ -124,14 +126,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::wheelEvent(QWheelEvent *event)
 {
     if(QApplication::keyboardModifiers () == Qt::ControlModifier){
-        if(event->delta()>0)              //鼠标往前转
-        {
-            textEdit->zoomIn();               //放大
-        }
-        else                              //鼠标往后转
-        {
-            textEdit->zoomOut();              //缩小
-        }
+        if(event->delta()>0)//鼠标往前转
+            textEdit->zoomIn();//放大
+        else
+            textEdit->zoomOut();//缩小
     }
 }
 //新建 ok
@@ -691,7 +689,11 @@ void MainWindow::setCurrentFileName(const QString &fileName)
     setWindowTitle(tr("%1[*] - %2").arg(TitleName).arg(tr("TextApplication")));//显示在标题
 }
 
-//关于查找替换的部分 - 槽函数
+/*
+ * author zch
+ * description 查找替换功能槽函数
+ * date 2019/8/29
+ * */
 void MainWindow::showReplace()
 {
     replaceDialog.show();
@@ -704,7 +706,7 @@ void MainWindow::showFind()
 
 void MainWindow::handleFindByTarget(QString target, bool cs, bool forward)
 {
-    //非正则表达式、大小写敏感、无需完整匹配单词、突出显示？、搜索方向
+    //非正则表达式、【是否】大小写敏感、无需完整匹配单词、选中、搜索方向
     if(!textEdit->findFirst(target, false, cs, false, true, forward))
     {
         QMessageBox msg(NULL);
@@ -714,7 +716,7 @@ void MainWindow::handleFindByTarget(QString target, bool cs, bool forward)
         msg.setIcon(QMessageBox::Information);
         msg.setStandardButtons(QMessageBox::Ok);
 
-        msg.setWindowFlags(Qt::WindowStaysOnTopHint);
+        msg.setWindowFlags(Qt::WindowStaysOnTopHint);//置顶
         msg.exec();
     }
 }
@@ -744,8 +746,11 @@ void MainWindow::handleReplaceSelect(QString target, QString to, bool cs, bool f
     }
 }
 
-//关于字体部分 - 槽函数
-
+/*
+ * author zjm
+ * description 字体槽函数
+ * date 2019/8/30
+ * */
 void MainWindow::showFont()
 {
     bool ok = false;
@@ -769,9 +774,11 @@ void MainWindow::showColor()
 }
 
 
-/*------------->F2 Slot<--------------*/
-//更改变量名字
-
+/*
+ * author zll
+ * description 变量名替换槽函数
+ * date 2019/8/30
+ * */
 void MainWindow::change_name(){
 
     int line = 0, index = 0;
@@ -844,3 +851,4 @@ void MainWindow::chang_all_name(){
           box.exec();
 
 }
+
