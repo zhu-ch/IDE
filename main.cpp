@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(application);
 
+    //Zhangjiaming0907 commit test
     QApplication app(argc, argv);
     MainWindow mainWin;
     mainWin.show();
