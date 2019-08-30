@@ -47,12 +47,14 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 public slots:
     void newFile();
     void open();
     bool save();
     bool saveAs();
+    void mycompile();
 
     void about();
     void documentWasModified();
@@ -73,6 +75,7 @@ private:
     void writeSettings();
     bool maybeSave();
     void loadFile(const QString &fileName);
+    bool LoadLogFile(const QString &fileName);      //读取编译信息文件
     bool saveFile(const QString &fileName);
     void setCurrentFileName(const QString &fileName);
     //QString strippedName(const QString &fullFileName);
@@ -108,16 +111,16 @@ private:
     QAction *aboutAct;
     QAction *aboutQtAct;
 
-    /**********************
+
     //编译运行
     QMenu *compileMenu;
     QAction *compileAct;//编译
     QAction *runAct;//运行
-    **********************/
 
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *compileToolBar;
 
     //查找和替换窗口
     FindDialog findDialog;

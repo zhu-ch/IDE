@@ -87,6 +87,8 @@ MainWindow::MainWindow()
     connect(&replaceDialog, SIGNAL(findByTarget(QString, bool, bool)), this, SLOT(handleFindByTarget(QString, bool, bool)));
     connect(&replaceDialog, SIGNAL(replaceSelect(QString, QString, bool, bool, bool)),
             this, SLOT(handleReplaceSelect(QString, QString, bool, bool, bool)));
+
+    move(0, 0);
 }
 //关闭窗口事件
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -96,6 +98,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->accept();
     } else {//当关闭时 提示是否保存后 用户选择取消
         event->ignore();
+    }
+}
+//ctrl+wheel 字体放大缩小
+void MainWindow::wheelEvent(QWheelEvent *event)
+{
+    if(QApplication::keyboardModifiers () == Qt::ControlModifier){
+        if(event->delta()>0)              //鼠标往前转
+        {
+            textEdit->zoomIn();               //放大
+        }
+        else                              //鼠标往后转
+        {
+            textEdit->zoomOut();              //缩小
+        }
     }
 }
 
@@ -133,6 +149,89 @@ bool MainWindow::saveAs()
         return false;
 
     return saveFile(fileName);
+}
+//编译
+bool MainWindow::LoadLogFile(const QString &fileName)
+{
+    QFile file(fileName);
+
+    if (!file.open(QFile::ReadOnly))
+    {
+        return false;
+    }
+
+    QTextStream in(&file);
+//    qDebug() << in.readAll();
+    QString logInfo = in.readAll();
+
+    bool isSucess;
+    //根据log文件的空与否判断编译是否有误
+    if (logInfo.isEmpty())
+    {
+        logInfo = "--编译成功--";
+        isSucess = true;
+    }
+    else
+    {
+        logInfo = "--编译失败--\r\n"+ logInfo;
+        isSucess = false;
+        //标出错误行数
+//        int errorline = GeterrorLine(logInfo);
+//        this->SeterrorMarker(errorline);
+    }
+
+    //将编译信息填写到编译信息框
+//    QApplication::setOverrideCursor(Qt::WaitCursor);
+//    LogText->setText(logInfo);
+//    QApplication::restoreOverrideCursor();
+    setStatusTip(logInfo.toStdString().data());
+
+    return isSucess;
+}
+void MainWindow::mycompile(){
+    //QMessageBox::information(NULL, "Title", "Test", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    if(maybeSave()){
+        /*预编译部分*/
+        //QString filename = QFileDialog::getSaveFileName(this);
+        QString filename = curFile;
+        FILE *p = fopen(filename.toStdString().data(),"r");
+        if(p == NULL) return ;
+
+        QString cppfile = filename +".c";
+        qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
+        FILE *p1 = fopen(cppfile.toStdString().data(),"w");
+        if(p1 == NULL) return ;
+
+        QString str;
+        while(!feof(p))
+        {
+            char buf[1024] = {0};
+            fgets(buf,sizeof(buf),p);
+            str += buf;
+        }
+        fputs(str.toStdString().data(),p1);
+        fclose(p);
+        fclose(p1);
+        QString cmd;
+        const char *s = filename.toStdString().data();
+        cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log",s,s,s);
+        system(cmd.toStdString().data());//先编译
+
+//        //如何删除那个临时文件呢
+//        cmd = filename.replace("/","\\") + ".c";
+//        remove(cmd.toStdString().data());
+
+
+        //判断是否编译成功
+        QString LOG = filename.toStdString().data();
+        if(LoadLogFile(LOG+".log")){
+            cmd = filename + ".exe";
+            system(cmd.toStdString().data());//再运行
+        }
+
+    }else{
+        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    }
 }
 
 //关于 ok
@@ -315,7 +414,7 @@ void MainWindow::createActions()
 
 
     //替换
-    replaceAct = new QAction(QIcon(":/images/find.png"),tr("&Replace"),this);
+    replaceAct = new QAction(QIcon(":/images/replace.png"),tr("&Replace"),this);
     replaceAct->setShortcut(tr("Ctrl+H"));
     replaceAct->setStatusTip(tr("Find the specified content in current file and replace"));
     connect(replaceAct, SIGNAL(triggered()), this, SLOT(showReplace()));
@@ -326,6 +425,18 @@ void MainWindow::createActions()
     findAct->setStatusTip(tr("Find the specified content in current file"));
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFind()));
 
+
+    //编译
+    compileAct = new QAction(QIcon(":/images/compile.png"),tr("&Compile"),this);
+    compileAct->setShortcut(tr("Ctrl+B"));
+    compileAct->setStatusTip(tr("Find the specified content in current file"));
+    connect(compileAct, SIGNAL(triggered()), textEdit, SLOT(undo()));
+
+    //运行
+    runAct = new QAction(QIcon(":/images/run.png"),tr("&Run"),this);
+    runAct->setShortcut(tr("Ctrl+R"));
+    runAct->setStatusTip(tr("Find the specified content in current file"));
+    connect(runAct, SIGNAL(triggered()), this, SLOT(mycompile()));
 
 
     //关于
@@ -376,9 +487,11 @@ void MainWindow::createMenus()
     editMenu->addAction(replaceAct);
     editMenu->addAction(findAct);
 
-    //menuBar()->addSeparator();
 
-    //TODO 添加菜单栏的运行功能
+    //编译运行
+    compileMenu = menuBar()->addMenu(tr("&Compile - Run"));
+    compileMenu->addAction(compileAct);
+    compileMenu->addAction(runAct);
 
 
     //帮助
@@ -403,8 +516,13 @@ void MainWindow::createToolBars()
     editToolBar->addAction(selectallAct);
     editToolBar->addAction(undoAct);
     editToolBar->addAction(redoAct);
+    editToolBar->addAction(findAct);
+    editToolBar->addAction(replaceAct);
 
-    //TODO 添加状态栏的运行功能
+    //编译运行
+    compileToolBar = addToolBar(tr("Compile"));
+    compileToolBar->addAction(compileAct);
+    compileToolBar->addAction(runAct);
 }
 //创建状态栏 ok
 void MainWindow::createStatusBar()
