@@ -446,7 +446,8 @@ void MainWindow::createActions()
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     //另存为
-    saveAsAct = new QAction(tr("Save &As..."), this);
+    saveAsAct = new QAction(QIcon(":/images/save-as.png"), tr("&Save As"), this);
+    saveAsAct->setShortcut(tr("Ctrl+Shift+S"));
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
@@ -622,7 +623,7 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(openfolderAct);
     fileToolBar->addAction(saveAct);
-
+    fileToolBar->addAction(saveAsAct);
     //编辑
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(cutAct);
