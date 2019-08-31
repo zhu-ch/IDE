@@ -11,5 +11,12 @@
         <file>images/find.png</file>
         <file>images/redo.png</file>
         <file>images/undo.png</file>
+        <file>images/openfolder.png</file>
+        <file>images/change.png</file>
+        <file>images/replace.png</file>
+        <file>images/run.png</file>
+        <file>images/compile.png</file>
+        <file>images/color.png</file>
+        <file>images/font.png</file>
     </qresource>
 </RCC>

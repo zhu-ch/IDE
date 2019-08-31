@@ -164,6 +164,15 @@ void MainWindow::open()
             loadFile(fileName);
     }
 }
+//打开文件夹
+void MainWindow::openfolder()
+{
+    if (maybeSave()) {
+        QString fileDir = QFileDialog::getExistingDirectory(this);
+        qDebug()<<fileDir;
+        //setQirTree(fileDir);
+    }
+}
 //保存
 bool MainWindow::save()
 {
@@ -430,6 +439,12 @@ void MainWindow::createActions()
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
+    //打开文件夹
+    openfolderAct = new QAction(QIcon(":/images/openfolder.png"), tr("&OpenFolder..."), this);
+    openfolderAct->setShortcut(tr("Ctrl+Shift+O"));
+    openfolderAct->setStatusTip(tr("Open an existing file folder"));
+    connect(openfolderAct, SIGNAL(triggered()), this, SLOT(openfolder()));
+
     //保存
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
@@ -562,6 +577,7 @@ void MainWindow::createMenus()
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
+    fileMenu->addAction(openfolderAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
     fileMenu->addSeparator();//添加分隔符
@@ -610,6 +626,7 @@ void MainWindow::createToolBars()
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
+    fileToolBar->addAction(openfolderAct);
     fileToolBar->addAction(saveAct);
 
     //编辑
