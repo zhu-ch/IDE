@@ -208,6 +208,7 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     //根据log文件的空与否判断编译是否有误
     if (logInfo.isEmpty())
     {
+        qDebug()<<"ok";
         logInfo = "--编译成功 在控制台执行程序--";
         isSucess = true;
     }
@@ -541,7 +542,7 @@ void MainWindow::createActions()
     connect(colorAct, SIGNAL(triggered()), this, SLOT(showColor()));
 
     //关于
-    aboutAct = new QAction(tr("&About"), this);
+    aboutAct = new QAction(tr("&About &us"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -945,7 +946,7 @@ void MainWindow::chang_all_name(){
         box.setText(tr("Rename success!"));
         box.setStandardButtons(QMessageBox::Yes);
           //box->setModal(true);
-
+        lineEdit->close();
           delete lineEdit;
           lineEdit = nullptr;
           box.show();
