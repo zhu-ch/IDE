@@ -977,6 +977,12 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
     }
 }
 
+
+/*
+ * author zch
+ * description 括号补全
+ * date 2019/8/31
+ * */
 void MainWindow::handleBraceComplete(int key){
     qDebug("handleBraceComplete %d", key);
     this->textEdit->getCursorPosition(&cursorLine, &cursorIndex);
