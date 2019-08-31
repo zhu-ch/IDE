@@ -40,6 +40,17 @@ public:
     const char *keywords(int set) const;
 };
 
+class MyKeyPressEater : public QObject
+{
+    Q_OBJECT
+
+signals:
+    void keyPressSiganl_braceComplete(int);
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -74,7 +85,10 @@ public slots:
     void showColor();
     void showFont();
 
+    void handleBraceComplete(int);
+
 private:
+    void bindSignals();
     void setTextEdit();                             //代码编辑区
     void initLogtext();                             //编辑信息提示区域
     void createActions();
@@ -151,6 +165,13 @@ private:
     //变量重命名相关：因为没法实现匿名函数所以需要的变量
     QString variableName;
     QLineEdit *lineEdit;
+
+    //监听按键
+    MyKeyPressEater *keyPressEater;
+
+    //光标位置
+    int cursorLine;
+    int cursorIndex;
 };
 
 #endif

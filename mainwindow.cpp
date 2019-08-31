@@ -72,6 +72,7 @@ const char * QscilexerCppAttach::keywords(int set) const
 MainWindow::MainWindow()
 {
     textEdit = new QsciScintilla;
+    keyPressEater = new MyKeyPressEater;
 
     QWidget* mainWidget = new QWidget;      //主窗口
 
@@ -82,6 +83,7 @@ MainWindow::MainWindow()
     createMenus();//菜单栏
     createToolBars();//工具栏
     createStatusBar();//状态栏
+    bindSignals();//绑定信号
 
     mainLayout = new QVBoxLayout;
     setTextEdit();//代码编辑区
@@ -95,19 +97,7 @@ MainWindow::MainWindow()
 
 
     readSettings();
-
-    connect(textEdit, SIGNAL(textChanged()),this, SLOT(documentWasModified()));//点击断点区域 绑定有关断点的函数
-
-    connect(textEdit,SIGNAL(cursorPositionChanged(int,int)),this,SLOT(do_cursorChanged()));//实时显示当前光标所在行函数
-
     setCurrentFileName("");
-
-    //处理查找、替换窗口的信号
-    connect(&findDialog, SIGNAL(findByTarget(QString, bool, bool)), this, SLOT(handleFindByTarget(QString, bool, bool)));
-    connect(&replaceDialog, SIGNAL(findByTarget(QString, bool, bool)), this, SLOT(handleFindByTarget(QString, bool, bool)));
-    connect(&replaceDialog, SIGNAL(replaceSelect(QString, QString, bool, bool, bool)),
-            this, SLOT(handleReplaceSelect(QString, QString, bool, bool, bool)));
-
     move(0, 0);
 }
 //关闭窗口事件
@@ -129,6 +119,26 @@ void MainWindow::wheelEvent(QWheelEvent *event)
         else
             textEdit->zoomOut();//缩小
     }
+}
+
+
+/*
+ * author zch
+ * description 绑定信号
+ * date 2019/8/29
+ * */
+void MainWindow::bindSignals(){
+    connect(textEdit, SIGNAL(textChanged()),this, SLOT(documentWasModified()));//点击断点区域 绑定有关断点的函数
+    connect(textEdit,SIGNAL(cursorPositionChanged(int,int)),this,SLOT(do_cursorChanged()));//实时显示当前光标所在行函数
+
+    //处理查找、替换窗口的信号
+    connect(&findDialog, SIGNAL(findByTarget(QString, bool, bool)), this, SLOT(handleFindByTarget(QString, bool, bool)));
+    connect(&replaceDialog, SIGNAL(findByTarget(QString, bool, bool)), this, SLOT(handleFindByTarget(QString, bool, bool)));
+    connect(&replaceDialog, SIGNAL(replaceSelect(QString, QString, bool, bool, bool)),
+            this, SLOT(handleReplaceSelect(QString, QString, bool, bool, bool)));
+
+    //键盘监听
+    connect(keyPressEater, SIGNAL(keyPressSiganl_braceComplete(int)), this, SLOT(handleBraceComplete(int)));
 }
 
 
@@ -309,6 +319,7 @@ void MainWindow::setTextEdit()
     textLexer->setColor(QColor(Qt:: green),QsciLexerCPP::CommentLine);              //设置自带的注释行为绿色
     textLexer->setColor(QColor(Qt:: yellow),QsciLexerCPP::KeywordSet2);             //设置自定义关键字的颜色为黄色
     textEdit->setLexer(textLexer);
+    textEdit->installEventFilter(keyPressEater);
 
     //1. 设置自动补全的字符串和补全方式
     QsciAPIs *apis = new QsciAPIs(textLexer);
@@ -929,3 +940,41 @@ void MainWindow::chang_all_name(){
           box.exec();
 }
 
+/*
+ * author zch
+ * description 监听键盘输入
+ * date 2019/8/31
+ * */
+bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == 40 || keyEvent->key() == 91 || keyEvent->key() == 123){
+            qDebug("Ate key press %d", keyEvent->key());
+            emit keyPressSiganl_braceComplete(keyEvent->key());
+            return true;
+        }
+        else return QObject::eventFilter(obj, event);
+    } else {
+        return QObject::eventFilter(obj, event);
+    }
+}
+
+void MainWindow::handleBraceComplete(int key){
+    qDebug("handleBraceComplete %d", key);
+    this->textEdit->getCursorPosition(&cursorLine, &cursorIndex);
+    switch (key) {
+    case 40://(
+        this->textEdit->insert(tr("()"));
+        break;
+    case 91://[
+        this->textEdit->insert(tr("[]"));
+        break;
+    case 123://{
+        this->textEdit->insert(tr("{}"));
+        break;
+    default:
+        break;
+    }
+    this->textEdit->setCursorPosition(cursorLine, cursorIndex+1);
+}
