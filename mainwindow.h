@@ -45,7 +45,7 @@ class MyKeyPressEater : public QObject
     Q_OBJECT
 
 signals:
-    void keyPressSiganl_braceComplete(int);
+    void keyPressSiganl_puncComplete(int);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -86,7 +86,7 @@ public slots:
     void showColor();
     void showFont();
 
-    void handleBraceComplete(int);
+    void handlePuncComplete(int);
 
 private:
     void bindSignals();

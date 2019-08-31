@@ -138,7 +138,7 @@ void MainWindow::bindSignals(){
             this, SLOT(handleReplaceSelect(QString, QString, bool, bool, bool)));
 
     //键盘监听
-    connect(keyPressEater, SIGNAL(keyPressSiganl_braceComplete(int)), this, SLOT(handleBraceComplete(int)));
+    connect(keyPressEater, SIGNAL(keyPressSiganl_puncComplete(int)), this, SLOT(handlePuncComplete(int)));
 }
 
 
@@ -302,17 +302,11 @@ void MainWindow::on_margin_clicked(int margin, int line, Qt::KeyboardModifiers s
     }
 }
 void MainWindow::do_cursorChanged(){
-    int ColNum;
-    int RowNum;
-    textEdit->getCursorPosition(&ColNum,&RowNum);
+    textEdit->getCursorPosition(&cursorLine,&cursorIndex);
 
-    QString Tip = QString("Current ColNum： ")+QString::number(ColNum)+QString("     Current RowNum： ")+QString::number(RowNum);////////////////////////////////
+    QString Tip = QString("Current ColNum： ") + QString::number(cursorLine)
+            + QString("     Current RowNum： ") + QString::number(cursorIndex);
     setStatusTip(Tip);
-    //const QTextCursor qcursor = textEdit->textCursor();
-    //int ColNum = qcursor.columnNumber();
-    //int RowNum = qcursor.blockCount();
-    //int row = textEdit->document()->blockCount();
-
 }
 
 
@@ -966,9 +960,10 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == 40 || keyEvent->key() == 91 || keyEvent->key() == 123){
+        if(keyEvent->key() == 40 || keyEvent->key() == 91 || keyEvent->key() == 123
+                || keyEvent->key() == 34 || keyEvent->key() == 39){
             qDebug("Ate key press %d", keyEvent->key());
-            emit keyPressSiganl_braceComplete(keyEvent->key());
+            emit keyPressSiganl_puncComplete(keyEvent->key());
             return true;
         }
         else return QObject::eventFilter(obj, event);
@@ -980,13 +975,19 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
 
 /*
  * author zch
- * description 括号补全
+ * description 标点补全
  * date 2019/8/31
  * */
-void MainWindow::handleBraceComplete(int key){
+void MainWindow::handlePuncComplete(int key){
     qDebug("handleBraceComplete %d", key);
     this->textEdit->getCursorPosition(&cursorLine, &cursorIndex);
     switch (key) {
+    case 34://"
+        this->textEdit->insert(tr("\"\""));
+        break;
+    case 39://'
+        this->textEdit->insert(tr("''"));
+        break;
     case 40://(
         this->textEdit->insert(tr("()"));
         break;
