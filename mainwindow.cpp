@@ -40,20 +40,21 @@
 #include <QToolBar>
 #include <QDebug>
 #include <QKeyEvent>
-#include <Qsci/qsciscintilla.h>
-#include<set>
+#include <set>
 
-//QsciScintilla本体
 #include<Qsci/qsciscintilla.h>
-//Lua语言的词法分析器
 #include <Qsci/qscilexerlua.h>
-//自动补全的apis
 #include <Qsci/qsciapis.h>
 
 #include "mainwindow.h"
-#include"replacedialog.h"
+#include "replacedialog.h"
+#include "finddialog.h"
 
-//可自定义关键字 ok
+/*
+ * author zjm
+ * description 词法分析器
+ * date 2019/8/29
+ * */
 const char * QscilexerCppAttach::keywords(int set) const
 {
     if(set == 1 || set == 3)
@@ -65,12 +66,9 @@ const char * QscilexerCppAttach::keywords(int set) const
 
     return 0;
 }
-/****讲解信号SINGAL与槽SLOT的机制connect****/
-/*
- * 简单来说就是点击和函数进行绑定
- * 不过有的是有也不一定是点击 反正就是二者可以绑定
- * 具体参考： http://c.biancheng.net/view/1823.html
-*/
+
+
+
 MainWindow::MainWindow()
 {
     textEdit = new QsciScintilla;
@@ -132,7 +130,14 @@ void MainWindow::wheelEvent(QWheelEvent *event)
             textEdit->zoomOut();//缩小
     }
 }
-//新建 ok
+
+
+/*
+ * author zjm
+ * description 文件功能
+ * date 2019/8/29
+ * */
+//新建
 void MainWindow::newFile()
 {
     if (maybeSave()) {
@@ -140,7 +145,7 @@ void MainWindow::newFile()
         setCurrentFileName("");
     }
 }
-//打开 ok
+//打开
 void MainWindow::open()
 {
     if (maybeSave()) {
@@ -149,7 +154,7 @@ void MainWindow::open()
             loadFile(fileName);
     }
 }
-//保存 ok
+//保存
 bool MainWindow::save()
 {
     if (curFile.isEmpty()) {
@@ -158,7 +163,7 @@ bool MainWindow::save()
         return saveFile(curFile);
     }
 }
-//另存为 ok
+//另存为
 bool MainWindow::saveAs()
 {
     QString fileName = QFileDialog::getSaveFileName(this);
@@ -178,7 +183,6 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     }
 
     QTextStream in(&file);
-//    qDebug() << in.readAll();
     QString logInfo = in.readAll();
 
     bool isSucess;
@@ -292,7 +296,13 @@ void MainWindow::do_cursorChanged(){
 
 }
 
-//代码编辑区
+
+/*
+ * author zjm zch
+ * description 代码编辑区
+ * date 2019/8/29
+ * modify 2019/8/31
+ * */
 void MainWindow::setTextEdit()
 {
     textLexer = new QscilexerCppAttach;                                             //绑定Cpp的关键字
@@ -300,7 +310,7 @@ void MainWindow::setTextEdit()
     textLexer->setColor(QColor(Qt:: yellow),QsciLexerCPP::KeywordSet2);             //设置自定义关键字的颜色为黄色
     textEdit->setLexer(textLexer);
 
-    //1. 设置自动补全的字符串和补全方式 ok
+    //1. 设置自动补全的字符串和补全方式
     QsciAPIs *apis = new QsciAPIs(textLexer);
     apis->add(QString("move"));//可自行添加
     apis->add(QString("moive"));
@@ -315,14 +325,13 @@ void MainWindow::setTextEdit()
     textEdit->setAutoCompletionThreshold(1);                    //每输入1个字符就出现自动完成的提示
 
 
-    //2. 行号显示区域 ok
+    //2.左边功能栏
+    //2.1.行号显示区域
     textEdit->setMarginType(0, QsciScintilla::NumberMargin);
     textEdit->setMarginLineNumbers(0, true);
     textEdit->setMarginWidth(0,30);
 
-
-
-    //断点设置区域？？
+    //2.2断点设置区域？？
     //https://qscintilla.com/symbol-margin/
     textEdit->setMarginType(1, QsciScintilla::SymbolMargin);
     textEdit->setMarginLineNumbers(1, false);
@@ -335,8 +344,7 @@ void MainWindow::setTextEdit()
     textEdit->markerDefine(QsciScintilla::Circle, 1);//断点形状大小
     textEdit->setMarkerBackgroundColor(QColor("#ee1111"), 1);//断点颜色
 
-
-    //单步执行显示区域 ？？？
+    //2.3单步执行显示区域 ？？
     textEdit->setMarginType(2, QsciScintilla::SymbolMargin);
     textEdit->setMarginLineNumbers(2, false);
     textEdit->setMarginWidth(2, 20);
@@ -345,33 +353,42 @@ void MainWindow::setTextEdit()
     textEdit->markerDefine(QsciScintilla::RightArrow, 2);
     textEdit->setMarkerBackgroundColor(QColor("#eaf593"), 2);
 
-
-    //自动折叠区域 ？？？
+    //2.4代码折叠
     textEdit->setMarginType(3, QsciScintilla::SymbolMargin);
     textEdit->setMarginLineNumbers(3, false);
     textEdit->setMarginWidth(3, 15);
     textEdit->setMarginSensitivity(3, true);
-
+    textEdit->setFolding(QsciScintilla::BoxedTreeFoldStyle, 3);
 
     /*****************以下为zjm添加的测试功能*******************/
-
-    //设置括号匹配 ok
+    //3.设置括号匹配
     textEdit->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-    //开启自动缩进 ok
+
+    //4.缩进
+    //开启自动缩进
     textEdit->setAutoIndent(true);
-    //设置缩进的显示方式 ok
+    //设置缩进的显示方式
     textEdit->setIndentationGuides(QsciScintilla::SC_IV_LOOKBOTH);
-    //为选中行添加背景 ok
+
+    //5.为选中行添加背景
     textEdit->setCaretLineVisible(true);
     textEdit->setCaretLineBackgroundColor(Qt::lightGray);
-    //设置字体 ok
-    textEdit->setFont(QFont("Courier New"));
-    //设置编码 ok
-    textEdit->SendScintilla(QsciScintilla::SCI_SETCODEPAGE,QsciScintilla::SC_CP_UTF8);//设置编码为UTF-8
 
+    //6.设置字体
+    textEdit->setFont(QFont("Courier New"));
+
+    //7.设置编码为UTF-8
+    textEdit->SendScintilla(QsciScintilla::SCI_SETCODEPAGE,QsciScintilla::SC_CP_UTF8);
     /****************以上为zjm添加的测试功能********************/
+
 }
-//初始化编译信息显示区域
+
+
+/*
+ * author zjm
+ * description 初始化编译信息显示区域
+ * date 2019/8/29
+ * */
 void MainWindow::initLogtext()
 {
     LogText = new QTextEdit;
@@ -379,9 +396,15 @@ void MainWindow::initLogtext()
 
     LogText->setFixedHeight(115);
     LogText->setText(tr("--编译信息显示区域--"));
-//    mainLayout->addWidget(LogText);
 }
-//绑定函数+绑定图片+快捷键+状态栏提示 ok
+
+
+/*
+ * author zjm zch zll
+ * description 槽函数绑定
+ * date 2019/8/29
+ * modify 2019/8/30
+ * */
 void MainWindow::createActions()
 {
     //新建
@@ -465,7 +488,7 @@ void MainWindow::createActions()
     findAct->setStatusTip(tr("Find the specified content in current file"));
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFind()));
 
-    //change icon
+    //变量重命名
     changeAct = new QAction(QIcon(":/images/change.png"),tr("&Change"),this);
     changeAct->setShortcut(tr("F2"));
     changeAct->setStatusTip(tr("Change the name of the selected variable"));
@@ -515,7 +538,13 @@ void MainWindow::createActions()
             copyAct, SLOT(setEnabled(bool)));
 
 }
-//创建菜单栏 ok
+
+/*
+ * author zjm zch zll
+ * description 创建菜单栏
+ * date 2019/8/29
+ * modify 2019/8/30
+ * */
 void MainWindow::createMenus()
 {
     //文件
@@ -556,7 +585,14 @@ void MainWindow::createMenus()
     formMenu->addAction(fontAct);
     formMenu->addAction(colorAct);
 }
-//创建工具栏 ok
+
+
+/*
+ * author zjm zch
+ * description 创建工具栏
+ * date 2019/8/29
+ * modify 2019/8/30
+ * */
 void MainWindow::createToolBars()
 {
     //文件
@@ -587,12 +623,30 @@ void MainWindow::createToolBars()
     formToolBar->addAction(fontAct);
     formToolBar->addAction(colorAct);
 }
-//创建状态栏 ok
+
+
+/*
+ * author zjm
+ * description 创建工具栏
+ * date 2019/8/29
+ * */
 void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
 }
-//读 - 配置文件
+
+
+/*
+ * author zjm
+ * description 读取配置文件
+ * date 2019/8/29
+ * */
+/*
+ * QSetting 配置文件
+ * https://www.cnblogs.com/claireyuancy/p/7095249.html
+ * https://blog.csdn.net/komtao520/article/details/79636665
+ * https://blog.csdn.net/qq1071247042/article/details/52892342
+ */
 void MainWindow::readSettings()
 {
     //当我们创建一个Qsettings的对象时，我们需要传递给它两个参数，第一个是你公司或者组织的名称，第二个事你的应用程序的名称
@@ -602,20 +656,26 @@ void MainWindow::readSettings()
     resize(size);
     move(pos);
 }
+
+
 /*
- * QSetting 配置文件
- * https://www.cnblogs.com/claireyuancy/p/7095249.html
- * https://blog.csdn.net/komtao520/article/details/79636665
- * https://blog.csdn.net/qq1071247042/article/details/52892342
- */
-//写 - 配置文件
+ * author zjm
+ * description 写配置文件
+ * date 2019/8/29
+ * */
 void MainWindow::writeSettings()
 {
     QSettings settings("Code or die", "C Language Editor");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 }
-//检查该文件是否进行更改 并提示用户该文件未保存，是否需要保存 ok
+
+
+/*
+ * author zjm
+ * description 退出时检查该文件是否进行更改 并提示用户该文件未保存，是否需要保存
+ * date 2019/8/29
+ * */
 bool MainWindow::maybeSave()
 {
     if (textEdit->isModified()) {//更改过 可能需要保存
@@ -632,7 +692,14 @@ bool MainWindow::maybeSave()
     }
     return true;//没有进行过更改
 }
-//读取文件 ok
+
+
+
+/*
+ * author zjm
+ * description 读取文件
+ * date 2019/8/29
+ * */
 void MainWindow::loadFile(const QString &fileName)
 {
     QFile file(fileName);
@@ -652,7 +719,14 @@ void MainWindow::loadFile(const QString &fileName)
     setCurrentFileName(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
-//保存文件 ok
+
+
+
+/*
+ * author zjm
+ * description 保存文件
+ * date 2019/8/29
+ * */
 bool MainWindow::saveFile(const QString &fileName)
 {
     QFile file(fileName);
@@ -673,7 +747,15 @@ bool MainWindow::saveFile(const QString &fileName)
     statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
-//设置当前文件名 并在标题中显示 ok
+
+
+
+/*
+ * author zjm
+ * description 设置当前文件名 并在标题中显示
+ * date 2019/8/29
+ * modify 2019/8/30
+ * */
 void MainWindow::setCurrentFileName(const QString &fileName)
 {
     curFile = fileName;
@@ -689,26 +771,23 @@ void MainWindow::setCurrentFileName(const QString &fileName)
     setWindowTitle(tr("%1[*] - %2").arg(TitleName).arg(tr("TextApplication")));//显示在标题
 }
 
+
 /*
  * author zch
  * description 查找替换功能槽函数
  * date 2019/8/29
  * */
-void MainWindow::showReplace()
-{
+void MainWindow::showReplace(){
     replaceDialog.show();
 }
 
-void MainWindow::showFind()
-{
+void MainWindow::showFind(){
     findDialog.show();
 }
 
-void MainWindow::handleFindByTarget(QString target, bool cs, bool forward)
-{
+void MainWindow::handleFindByTarget(QString target, bool cs, bool forward){
     //非正则表达式、【是否】大小写敏感、无需完整匹配单词、选中、搜索方向
-    if(!textEdit->findFirst(target, false, cs, false, true, forward))
-    {
+    if(!textEdit->findFirst(target, false, cs, false, true, forward))    {
         QMessageBox msg(NULL);
 
         msg.setWindowTitle("Find");
@@ -721,8 +800,7 @@ void MainWindow::handleFindByTarget(QString target, bool cs, bool forward)
     }
 }
 
-void MainWindow::handleReplaceSelect(QString target, QString to, bool cs, bool forward, bool replaceAll)
-{
+void MainWindow::handleReplaceSelect(QString target, QString to, bool cs, bool forward, bool replaceAll){
     if(!textEdit->hasSelectedText())
         handleFindByTarget(target, cs, forward);
 
@@ -745,6 +823,7 @@ void MainWindow::handleReplaceSelect(QString target, QString to, bool cs, bool f
         msg.exec();
     }
 }
+
 
 /*
  * author zjm
@@ -847,8 +926,6 @@ void MainWindow::chang_all_name(){
           delete lineEdit;
           lineEdit = nullptr;
           box.show();
-
           box.exec();
-
 }
 

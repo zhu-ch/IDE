@@ -1,3 +1,9 @@
+/*
+ * author zch
+ * description 查找对话框
+ * date 2019/8/29
+ * */
+
 #ifndef FINDDIALOG_H_
 #define FINDDIALOG_H_
 

@@ -1,3 +1,9 @@
+/*
+ * author zch
+ * description 替换对话框
+ * date 2019/8/29
+ * */
+
 #include "ReplaceDialog.h"
 #include <QDebug>
 

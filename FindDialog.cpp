@@ -1,3 +1,9 @@
+/*
+ * author zch
+ * description 查找对话框
+ * date 2019/8/29
+ * */
+
 #include "FindDialog.h"
 #include <QMessageBox>
 #include <QDebug>
@@ -18,7 +24,7 @@ void FindDialog::initControl()
     m_findBtn.setText("Find Next");
     m_closeBtn.setText("Close");
     m_matchChkBx.setText("大小写匹配");
-    //这里的前后是反的！
+    //这里的前后和中文语境是反的！
     m_backwardBtn.setText("向前");
     m_forwardBtn.setText("向后");
     m_forwardBtn.setChecked(true);
