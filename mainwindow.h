@@ -54,6 +54,7 @@ protected:
 public slots:
     void newFile();
     void open();
+    void openfolder();
     bool save();
     bool saveAs();
     void mycompile();
@@ -104,6 +105,7 @@ private:
     QMenu *fileMenu;
     QAction *newAct;            //新建
     QAction *openAct;           //打开
+    QAction *openfolderAct;     //打开文件夹
     QAction *saveAct;           //保存
     QAction *saveAsAct;//另存为
     QAction *exitAct;//退出
