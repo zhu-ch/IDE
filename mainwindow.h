@@ -27,6 +27,7 @@
 #include <QDialog>
 #include "finddialog.h"
 #include "replacedialog.h"
+#include <QLabel>
 
 class QAction;
 class QMenu;
@@ -87,6 +88,7 @@ public slots:
     void showFont();
 
     void handlePuncComplete(int);
+
 
 private:
     void bindSignals();
@@ -174,6 +176,11 @@ private:
     //光标位置
     int cursorLine;
     int cursorIndex;
+
+    //状态栏设置标签
+    QLabel* first_statusLabel; //声明两个标签对象，用于显示状态信息
+    QLabel* second_statusLabel;
+    void init_statusBar(); //初始化状态栏
 };
 
 #endif

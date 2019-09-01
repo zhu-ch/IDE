@@ -82,9 +82,9 @@ MainWindow::MainWindow()
     createActions();//点击按钮与函数进行绑定
     createMenus();//菜单栏
     createToolBars();//工具栏
-    createStatusBar();//状态栏
+    //createStatusBar();//状态栏
+    init_statusBar();//状态栏
     bindSignals();//绑定信号
-
     mainLayout = new QVBoxLayout;
     setTextEdit();//代码编辑区
     initLogtext();//编译信息提示区域
@@ -307,7 +307,7 @@ void MainWindow::do_cursorChanged(){
 
     QString Tip = QString("Current ColNum： ") + QString::number(cursorLine)
             + QString("     Current RowNum： ") + QString::number(cursorIndex);
-    setStatusTip(Tip);
+    first_statusLabel->setText(Tip);
 }
 
 
@@ -654,11 +654,11 @@ void MainWindow::createToolBars()
  * description 创建工具栏
  * date 2019/8/29
  * */
-void MainWindow::createStatusBar()
+/*void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
 }
-
+*/
 
 /*
  * author zjm
@@ -1003,4 +1003,28 @@ void MainWindow::handlePuncComplete(int key){
         break;
     }
     this->textEdit->setCursorPosition(cursorLine, cursorIndex+1);
+}
+
+/*
+ * author lzy
+ * description 状态栏修改
+ * date 2019/9/1
+ * */
+void MainWindow::init_statusBar()
+{
+first_statusLabel = new QLabel; //新建标签
+first_statusLabel->setMinimumSize(400,30); //设置标签最小尺寸
+first_statusLabel->setFrameShape(QFrame::WinPanel); //设置标签形状
+first_statusLabel->setContentsMargins(15,0,0,0);
+//first_statusLabel->setFrameShadow(QFrame::Sunken); //设置标签阴影
+second_statusLabel = new QLabel;
+second_statusLabel->setMinimumSize(400,30);
+second_statusLabel->setFrameShape(QFrame::WinPanel);
+second_statusLabel->setContentsMargins(70,0,0,0);
+//second_statusLabel->setFrameShadow(QFrame::Sunken);
+statusBar()->setStyleSheet("QFrame{border: 0px;}");
+statusBar()->addWidget(first_statusLabel);
+statusBar()->addWidget(second_statusLabel);
+first_statusLabel->setText(tr( "Current ColNum： 0     Current RowNum： 0")); //初始化内容
+second_statusLabel->setText(tr( "Ready"));
 }
