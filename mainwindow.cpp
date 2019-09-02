@@ -76,8 +76,6 @@ MainWindow::MainWindow()
 
     QWidget* mainWidget = new QWidget;      //主窗口
 
-
-
     setCentralWidget(textEdit);
     createActions();//点击按钮与函数进行绑定
     createMenus();//菜单栏
@@ -487,7 +485,7 @@ void MainWindow::createActions()
 
     //撤销
     undoAct = new QAction(QIcon(":/images/undo.png"),tr("&Undo"),this);
-    undoAct->setShortcut(tr("Ctrl+Z"));
+    undoAct->setShortcut(tr("ctrl+Z"));
     undoAct->setStatusTip(tr("Cancel this operation"));
     connect(undoAct, SIGNAL(triggered()), textEdit, SLOT(undo()));
 
@@ -558,7 +556,10 @@ void MainWindow::createActions()
             cutAct, SLOT(setEnabled(bool)));
     connect(textEdit, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
-
+    //设置注释
+    annotation=new QAction(this);
+    QShortcut* shortcut = new QShortcut(QKeySequence("Shift+Ctrl+/"),this);
+    connect(shortcut,SIGNAL(activated()),this,SLOT(Annotation()));
 }
 
 /*
@@ -619,12 +620,12 @@ void MainWindow::createMenus()
 void MainWindow::createToolBars()
 {
     //文件
-    fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(newAct);
-    fileToolBar->addAction(openAct);
-    fileToolBar->addAction(openfolderAct);
-    fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(saveAsAct);
+   fileToolBar = addToolBar(tr("File"));
+   fileToolBar->addAction(newAct);
+   fileToolBar->addAction(openAct);
+   fileToolBar->addAction(openfolderAct);
+   fileToolBar->addAction(saveAct);
+   fileToolBar->addAction(saveAsAct);
     //编辑
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(cutAct);
@@ -1027,4 +1028,25 @@ statusBar()->addWidget(first_statusLabel);
 statusBar()->addWidget(second_statusLabel);
 first_statusLabel->setText(tr( "Current ColNum： 0     Current RowNum： 0")); //初始化内容
 second_statusLabel->setText(tr( "Ready"));
+}
+/*
+ * author lzy
+ * description 多行注释
+ * date 2019/9/2
+ * */
+void MainWindow::Annotation(){
+     qDebug()<<"aa";
+    textEdit->getSelection(&h_from,&aa,&h_to,&bb);
+    if(h_from>h_to){
+        temp=h_from;
+        h_from=h_to;
+        h_to=temp;//先比大小，保证h_from<h_to
+    }
+    qDebug()<<h_from;
+    qDebug()<<h_to;
+    for(i=h_from;i<=h_to;i++){
+        textEdit->insertAt (tr("//"), i, 0 );
+        qDebug()<<"bb";
+    }
+
 }

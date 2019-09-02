@@ -28,6 +28,8 @@
 #include "finddialog.h"
 #include "replacedialog.h"
 #include <QLabel>
+#include<stdio.h>
+#include<QShortcut>
 
 class QAction;
 class QMenu;
@@ -88,7 +90,7 @@ public slots:
     void showFont();
 
     void handlePuncComplete(int);
-
+    void Annotation();
 
 private:
     void bindSignals();
@@ -137,7 +139,7 @@ private:
     QAction *replaceAct;//替换
     QAction *findAct;//查找
     QAction *changeAct;//更改变量
-
+    QAction *annotation;//添加注释
     //帮助
     QMenu *helpMenu;
     QAction *aboutAct;
@@ -181,6 +183,11 @@ private:
     QLabel* first_statusLabel; //声明两个标签对象，用于显示状态信息
     QLabel* second_statusLabel;
     void init_statusBar(); //初始化状态栏
+
+    //多行注释
+    int h_from;
+    int h_to;
+    int i;int temp;int aa;int bb;
 };
 
 #endif
