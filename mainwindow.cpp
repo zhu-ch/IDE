@@ -87,9 +87,23 @@ MainWindow::MainWindow()
     setTextEdit();//代码编辑区
     initLogtext();//编译信息提示区域
 
+    //树形控件
+    //QSplitter *splitter = new QSplitter;
+    //QDirModel *model = new QDirModel;
+//    myqtreeview = new MyQTreeView(splitter);
+    myqtreeview = new MyQTreeView();
+    myqtreeview->model = new QDirModel;
+    myqtreeview->setModel(myqtreeview->model);
+    fileDir="C:\\Users\\Zhangjiaming\\Desktop";
+    myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
+    myqtreeview->setColumnWidth(0,300);
+    myqtreeview->hideColumn(1);
+    myqtreeview->hideColumn(2);
+    connect(myqtreeview,SIGNAL(doubleClicked(const QModelIndex& )),this,SLOT(myTreeViewOpenFile(QModelIndex)));
     //设置layout布局
     mainLayout->addWidget(textEdit, 0);
     mainLayout->addWidget(LogText);
+    mainLayout->addWidget(myqtreeview);//添加树形控件
     mainWidget->setLayout(mainLayout);
     this->setCentralWidget(mainWidget);
 
@@ -158,6 +172,7 @@ void MainWindow::open()
 {
     if (maybeSave()) {
         QString fileName = QFileDialog::getOpenFileName(this);
+        qDebug()<<fileName.toStdString().data();
         if (!fileName.isEmpty())
             loadFile(fileName);
     }
@@ -166,9 +181,15 @@ void MainWindow::open()
 void MainWindow::openfolder()
 {
     if (maybeSave()) {
-        QString fileDir = QFileDialog::getExistingDirectory(this);
-        qDebug()<<fileDir;
-        //setQirTree(fileDir);
+        fileDir = QFileDialog::getExistingDirectory(this);
+        qDebug()<<fileDir;/*
+        myqtreeview->model = new QDirModel;
+        myqtreeview->setModel(myqtreeview->model);
+        myqtreeview->setRootIndex(myqtreeview->model->index("D:\\"));*/
+        myqtreeview->reset();
+        myqtreeview->model = new QDirModel;
+        myqtreeview->setModel(myqtreeview->model);
+        myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
     }
 }
 //保存
@@ -1049,4 +1070,23 @@ void MainWindow::Annotation(){
         qDebug()<<"bb";
     }
 
+}
+/*
+ * author zjm
+ * description 树形目录打开文件
+ * date 2019/9/6
+ * */
+void MainWindow::myTreeViewOpenFile(QModelIndex index){
+    myqtreeview->selectFilePath="";
+    //qDebug()<<index.data().toString();//文件名
+    myqtreeview->selectFilePath = QString(index.data().toString()) + myqtreeview->selectFilePath;
+    while(index.parent().data().toString()!=""){
+        index=index.parent();
+        //qDebug()<<index.data().toString();
+        myqtreeview->selectFilePath = QString(index.data().toString()) + QString("/") + myqtreeview->selectFilePath;
+    }
+    qDebug()<<"打开文件"<<myqtreeview->selectFilePath;
+    if (maybeSave()) {//TODO 打开新窗口
+        loadFile(myqtreeview->selectFilePath);
+    }
 }

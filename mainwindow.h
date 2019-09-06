@@ -25,11 +25,15 @@
 #include <QMainWindow>
 #include <Qsci/qscilexercpp.h>
 #include <QDialog>
+#include <QLabel>
+#include <stdio.h>
+#include <QShortcut>
+#include <QTextCodec>
+#include <QSplitter>
+#include <QDirModel>
 #include "finddialog.h"
 #include "replacedialog.h"
-#include <QLabel>
-#include<stdio.h>
-#include<QShortcut>
+#include "myqtreeview.h"
 
 class QAction;
 class QMenu;
@@ -92,6 +96,8 @@ public slots:
     void handlePuncComplete(int);
     void Annotation();
 
+    void myTreeViewOpenFile(QModelIndex);
+
 private:
     void bindSignals();
     void setTextEdit();                             //代码编辑区
@@ -116,6 +122,12 @@ private:
     QsciLexer *textLexer;               //语法分析器
     QTextEdit *LogText;                 //build log text
     QString curFile;                    //当前打开文件的路径
+
+    //树形目录部分
+    QString fileDir;//当前树形目录根目录
+    QSplitter *splitter;
+    //QDirModel *model;
+    MyQTreeView *myqtreeview;
 
     /***菜单栏部分***/
 
