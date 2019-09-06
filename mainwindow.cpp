@@ -182,10 +182,7 @@ void MainWindow::openfolder()
 {
     if (maybeSave()) {
         fileDir = QFileDialog::getExistingDirectory(this);
-        qDebug()<<fileDir;/*
-        myqtreeview->model = new QDirModel;
-        myqtreeview->setModel(myqtreeview->model);
-        myqtreeview->setRootIndex(myqtreeview->model->index("D:\\"));*/
+        qDebug()<<fileDir;
         myqtreeview->reset();
         myqtreeview->model = new QDirModel;
         myqtreeview->setModel(myqtreeview->model);
@@ -1086,7 +1083,17 @@ void MainWindow::myTreeViewOpenFile(QModelIndex index){
         myqtreeview->selectFilePath = QString(index.data().toString()) + QString("/") + myqtreeview->selectFilePath;
     }
     qDebug()<<"打开文件"<<myqtreeview->selectFilePath;
-    if (maybeSave()) {//TODO 打开新窗口
+    qDebug()<<curFile;
+    qDebug()<<textEdit->isModified();
+    if(curFile==""&&!textEdit->isModified()){//加载在本窗口(如果现在文件名是空且没被更新就本窗口打开，否则新窗口)
         loadFile(myqtreeview->selectFilePath);
+    }else{//加载在新窗口
+        MainWindow *newMainWindow = new MainWindow();
+        newMainWindow->myqtreeview->reset();
+        newMainWindow->myqtreeview->model = new QDirModel;
+        newMainWindow->myqtreeview->setModel(myqtreeview->model);
+        newMainWindow->myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
+        newMainWindow->loadFile(myqtreeview->selectFilePath);
+        newMainWindow->show();
     }
 }
