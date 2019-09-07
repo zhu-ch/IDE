@@ -49,6 +49,7 @@
 #include "mainwindow.h"
 #include "replacedialog.h"
 #include "finddialog.h"
+#include "runthread.h"
 
 /*
  * author zjm
@@ -269,7 +270,7 @@ void MainWindow::mycompile(){
         fclose(p1);
         QString cmd;
         const char *s = filename.toStdString().data();
-        cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log",s,s,s);
+        cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log -g",s,s,s);//-g是必须的
         system(cmd.toStdString().data());//先编译
 
 //        //如何删除那个临时文件呢
@@ -292,14 +293,17 @@ void MainWindow::myrun(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe  && pause";
-        system(cmd.toStdString().data());
+        QString cmd = curFile + ".exe && g:/pressAnyKeyToContinue.exe && pause";
+        RunThread *rthread = new RunThread(cmd);
+        connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
+        rthread->start();
     }else{
         qDebug()<<"编译失败";
     }
 }
 
 void MainWindow::compile_run(){
+    qDebug()<<"compile_run";
     if(maybeSave()){
         /*预编译部分*/
         //QString filename = QFileDialog::getSaveFileName(this);
@@ -335,8 +339,10 @@ void MainWindow::compile_run(){
         //判断是否编译成功
         QString LOG = filename.toStdString().data();
         if(LoadLogFile(LOG+".log")){
-            cmd = filename + ".exe && pause";
-            system(cmd.toStdString().data());//再运行
+            QString cmd = curFile + ".exe && g:/pressAnyKeyToContinue.exe && pause";
+            RunThread *rthread = new RunThread(cmd);
+            connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
+            rthread->start();
         }
 
     }else{
@@ -404,7 +410,7 @@ void MainWindow::all_compile(){
         fclose(p1);
         QString cmd;
 
-        cmd = "g++ -o "+filename+".exe ";
+        cmd = "g++ -o "+filename+".exe -g";
         cmd += filename+".cpp";
 
         //获取路径
@@ -452,8 +458,10 @@ void MainWindow::all_run(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe  && pause";
-        system(cmd.toStdString().data());
+        QString cmd = curFile + ".exe && G:/pressAnyKeyToContinue.exe && pause";
+        RunThread *rthread = new RunThread(cmd);
+        connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
+        rthread->start();
     }else{
         qDebug()<<"编译失败";
     }
@@ -714,9 +722,9 @@ void MainWindow::createActions()
 
     //编译运行
     CompileRunAct = new QAction(QIcon(":/images/compile_run.png"),tr("&Compile_Run"),this);
-    CompileRunAct->setShortcut(tr("Ctrl+R"));
+    CompileRunAct->setShortcut(tr("Alt+R"));
     CompileRunAct->setStatusTip(tr("Find the specified content in current file"));
-    connect(runAct, SIGNAL(triggered()), this, SLOT(compile_run()));
+    connect(CompileRunAct, SIGNAL(triggered()), this, SLOT(compile_run()));
 
     //多文件编译
     allCompileAct = new QAction(QIcon(":/images/all-compile.png"),tr("&All_Compile"),this);
@@ -1222,21 +1230,21 @@ void MainWindow::handlePuncComplete(int key){
  * */
 void MainWindow::init_statusBar()
 {
-first_statusLabel = new QLabel; //新建标签
-first_statusLabel->setMinimumSize(400,30); //设置标签最小尺寸
-first_statusLabel->setFrameShape(QFrame::WinPanel); //设置标签形状
-first_statusLabel->setContentsMargins(15,0,0,0);
-//first_statusLabel->setFrameShadow(QFrame::Sunken); //设置标签阴影
-second_statusLabel = new QLabel;
-second_statusLabel->setMinimumSize(400,30);
-second_statusLabel->setFrameShape(QFrame::WinPanel);
-second_statusLabel->setContentsMargins(70,0,0,0);
-//second_statusLabel->setFrameShadow(QFrame::Sunken);
-statusBar()->setStyleSheet("QFrame{border: 0px;}");
-statusBar()->addWidget(first_statusLabel);
-statusBar()->addWidget(second_statusLabel);
-first_statusLabel->setText(tr( "Current ColNum： 0     Current RowNum： 0")); //初始化内容
-second_statusLabel->setText(tr( "Ready"));
+    first_statusLabel = new QLabel; //新建标签
+    first_statusLabel->setMinimumSize(400,30); //设置标签最小尺寸
+    first_statusLabel->setFrameShape(QFrame::WinPanel); //设置标签形状
+    first_statusLabel->setContentsMargins(15,0,0,0);
+    //first_statusLabel->setFrameShadow(QFrame::Sunken); //设置标签阴影
+    second_statusLabel = new QLabel;
+    second_statusLabel->setMinimumSize(400,30);
+    second_statusLabel->setFrameShape(QFrame::WinPanel);
+    second_statusLabel->setContentsMargins(70,0,0,0);
+    //second_statusLabel->setFrameShadow(QFrame::Sunken);
+    statusBar()->setStyleSheet("QFrame{border: 0px;}");
+    statusBar()->addWidget(first_statusLabel);
+    statusBar()->addWidget(second_statusLabel);
+    first_statusLabel->setText(tr( "Current ColNum： 0     Current RowNum： 0")); //初始化内容
+    second_statusLabel->setText(tr( "Ready"));
 }
 /*
  * author zjm lzy

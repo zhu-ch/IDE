@@ -7,11 +7,13 @@ macx {
 HEADERS      = mainwindow.h \
     FindDialog.h \
     ReplaceDialog.h \
-    myqtreeview.h
+    myqtreeview.h \
+    runthread.h
 SOURCES      = main.cpp mainwindow.cpp \
     FindDialog.cpp \
     ReplaceDialog.cpp \
-    myqtreeview.cpp
+    myqtreeview.cpp \
+    runthread.cpp
 RESOURCES    = application.qrc
 
 #以下为新增
