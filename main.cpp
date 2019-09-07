@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(application);
 
-    //liuzhenyu commit test
+    //zch commit test
     QApplication app(argc, argv);
     MainWindow mainWin;
     mainWin.show();
