@@ -281,13 +281,31 @@ void MainWindow::mycompile(){
         //判断是否编译成功
         QString LOG = filename.toStdString().data();
         if(LoadLogFile(LOG+".log")){
-            cmd = filename + ".exe";
-            system(cmd.toStdString().data());//再运行
+            qDebug()<<"可以运行";
         }
 
     }else{
         QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     }
+}
+
+void MainWindow::myrun(){
+    QString LOG = curFile.toStdString().data();
+    if(LoadLogFile(LOG+".log")){
+        qDebug()<<"可以运行";
+        QString cmd = curFile + ".exe";
+        system(cmd.toStdString().data());
+    }else{
+        qDebug()<<"编译失败";
+    }
+}
+
+void MainWindow::all_compile(){
+
+}
+
+void MainWindow::all_run(){
+
 }
 
 //关于 ok
@@ -391,7 +409,6 @@ void MainWindow::setTextEdit()
     textEdit->setMarginSensitivity(3, true);
     textEdit->setFolding(QsciScintilla::BoxedTreeFoldStyle, 3);
 
-    /*****************以下为zjm添加的测试功能*******************/
     //3.设置括号匹配
     textEdit->setBraceMatching(QsciScintilla::SloppyBraceMatch);
 
@@ -410,7 +427,6 @@ void MainWindow::setTextEdit()
 
     //7.设置编码为UTF-8
     textEdit->SendScintilla(QsciScintilla::SCI_SETCODEPAGE,QsciScintilla::SC_CP_UTF8);
-    /****************以上为zjm添加的测试功能********************/
 
 }
 
@@ -537,13 +553,25 @@ void MainWindow::createActions()
     compileAct = new QAction(QIcon(":/images/compile.png"),tr("&Compile"),this);
     compileAct->setShortcut(tr("Ctrl+B"));
     compileAct->setStatusTip(tr("Find the specified content in current file"));
-    connect(compileAct, SIGNAL(triggered()), textEdit, SLOT(undo()));
+    connect(compileAct, SIGNAL(triggered()), this, SLOT(mycompile()));
 
     //运行
     runAct = new QAction(QIcon(":/images/run.png"),tr("&Run"),this);
     runAct->setShortcut(tr("Ctrl+R"));
     runAct->setStatusTip(tr("Find the specified content in current file"));
-    connect(runAct, SIGNAL(triggered()), this, SLOT(mycompile()));
+    connect(runAct, SIGNAL(triggered()), this, SLOT(myrun()));
+
+    //多文件编译
+    allCompileAct = new QAction(QIcon(":/images/all-compile.png"),tr("&All_Compile"),this);
+    allCompileAct->setShortcut(tr("Ctrl+Shift+B"));
+    allCompileAct->setStatusTip(tr("Find the specified content in current file"));
+    connect(allCompileAct, SIGNAL(triggered()), this, SLOT(mycompile()));
+
+    //多文件运行
+    allRunAct = new QAction(QIcon(":/images/all-run.png"),tr("&All_Run"),this);
+    allRunAct->setShortcut(tr("Ctrl+Shift+R"));
+    allRunAct->setStatusTip(tr("Find the specified content in current file"));
+    connect(allRunAct, SIGNAL(triggered()), this, SLOT(myrun()));
 
     //字体样式和大小
     fontAct = new QAction(QIcon(":/images/font.png"),tr("&Font"),this);
@@ -615,6 +643,8 @@ void MainWindow::createMenus()
     compileMenu = menuBar()->addMenu(tr("&Compile - Run"));
     compileMenu->addAction(compileAct);
     compileMenu->addAction(runAct);
+    compileMenu->addAction(allCompileAct);
+    compileMenu->addAction(allRunAct);
 
 
     //帮助
@@ -660,6 +690,8 @@ void MainWindow::createToolBars()
     compileToolBar = addToolBar(tr("Compile"));
     compileToolBar->addAction(compileAct);
     compileToolBar->addAction(runAct);
+    compileToolBar->addAction(allCompileAct);
+    compileToolBar->addAction(allRunAct);
 
     //格式
     formToolBar = addToolBar(tr("Form"));

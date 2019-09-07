@@ -76,6 +76,10 @@ public slots:
     bool save();
     bool saveAs();
     void mycompile();
+    void myrun();
+
+    void all_compile();
+    void all_run();
 
     void about();
     void documentWasModified();
@@ -152,6 +156,7 @@ private:
     QAction *findAct;//查找
     QAction *changeAct;//更改变量
     QAction *annotation;//添加注释
+
     //帮助
     QMenu *helpMenu;
     QAction *aboutAct;
@@ -162,6 +167,8 @@ private:
     QMenu *compileMenu;
     QAction *compileAct;//编译
     QAction *runAct;//运行
+    QAction *allCompileAct;
+    QAction *allRunAct;
 
     //格式
     QMenu *formMenu;

@@ -19,5 +19,7 @@
         <file>images/color.png</file>
         <file>images/font.png</file>
         <file>images/save-as.png</file>
+        <file>images/all-compile.png</file>
+        <file>images/all-run.png</file>
     </qresource>
 </RCC>
