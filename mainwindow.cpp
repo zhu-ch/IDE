@@ -292,10 +292,55 @@ void MainWindow::myrun(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe";
+        QString cmd = curFile + ".exe  && pause";
         system(cmd.toStdString().data());
     }else{
         qDebug()<<"编译失败";
+    }
+}
+
+void MainWindow::compile_run(){
+    if(maybeSave()){
+        /*预编译部分*/
+        //QString filename = QFileDialog::getSaveFileName(this);
+        QString filename = curFile;
+        FILE *p = fopen(filename.toStdString().data(),"r");
+        if(p == NULL) return ;
+
+        QString cppfile = filename +".c";
+        qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
+        FILE *p1 = fopen(cppfile.toStdString().data(),"w");
+        if(p1 == NULL) return ;
+
+        QString str;
+        while(!feof(p))
+        {
+            char buf[1024] = {0};
+            fgets(buf,sizeof(buf),p);
+            str += buf;
+        }
+        fputs(str.toStdString().data(),p1);
+        fclose(p);
+        fclose(p1);
+        QString cmd;
+        const char *s = filename.toStdString().data();
+        cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log",s,s,s);
+        system(cmd.toStdString().data());//先编译
+
+//        //如何删除那个临时文件呢
+//        cmd = filename.replace("/","\\") + ".c";
+//        remove(cmd.toStdString().data());
+
+
+        //判断是否编译成功
+        QString LOG = filename.toStdString().data();
+        if(LoadLogFile(LOG+".log")){
+            cmd = filename + ".exe && pause";
+            system(cmd.toStdString().data());//再运行
+        }
+
+    }else{
+        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     }
 }
 
@@ -307,7 +352,7 @@ void MainWindow::all_compile(){
         FILE *p = fopen(filename.toStdString().data(),"r");
         if(p == NULL) return ;
 
-        QString cppfile = filename +".c";
+        QString cppfile = filename +".cpp";
         //qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
         FILE *p1 = fopen(cppfile.toStdString().data(),"w");
         if(p1 == NULL) return ;
@@ -329,7 +374,6 @@ void MainWindow::all_compile(){
 
         //TODO 循环加入
 
-
         cmd += "2>"+filename+".log";
         qDebug()<<cmd.toStdString().data();
         system(cmd.toStdString().data());
@@ -349,7 +393,7 @@ void MainWindow::all_run(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe";
+        QString cmd = curFile + ".exe  && pause";
         system(cmd.toStdString().data());
     }else{
         qDebug()<<"编译失败";
@@ -609,6 +653,12 @@ void MainWindow::createActions()
     runAct->setStatusTip(tr("Find the specified content in current file"));
     connect(runAct, SIGNAL(triggered()), this, SLOT(myrun()));
 
+    //编译运行
+    CompileRunAct = new QAction(QIcon(":/images/compile_run.png"),tr("&Compile_Run"),this);
+    CompileRunAct->setShortcut(tr("Ctrl+R"));
+    CompileRunAct->setStatusTip(tr("Find the specified content in current file"));
+    connect(runAct, SIGNAL(triggered()), this, SLOT(compile_run()));
+
     //多文件编译
     allCompileAct = new QAction(QIcon(":/images/all-compile.png"),tr("&All_Compile"),this);
     allCompileAct->setShortcut(tr("Ctrl+Shift+B"));
@@ -691,6 +741,7 @@ void MainWindow::createMenus()
     compileMenu = menuBar()->addMenu(tr("&Compile - Run"));
     compileMenu->addAction(compileAct);
     compileMenu->addAction(runAct);
+    compileMenu->addAction(CompileRunAct);
     compileMenu->addAction(allCompileAct);
     compileMenu->addAction(allRunAct);
 
@@ -738,6 +789,7 @@ void MainWindow::createToolBars()
     compileToolBar = addToolBar(tr("Compile"));
     compileToolBar->addAction(compileAct);
     compileToolBar->addAction(runAct);
+    compileToolBar->addAction(CompileRunAct);
     compileToolBar->addAction(allCompileAct);
     compileToolBar->addAction(allRunAct);
 
@@ -1128,7 +1180,7 @@ first_statusLabel->setText(tr( "Current ColNum： 0     Current RowNum： 0")); 
 second_statusLabel->setText(tr( "Ready"));
 }
 /*
- * author lzy
+ * author zjm lzy
  * description 多行注释
  * date 2019/9/2
  * */
@@ -1160,7 +1212,6 @@ void MainWindow::Annotation(){
             textEdit->removeSelectedText();
         }
     }
-
 }
 /*
  * author zjm

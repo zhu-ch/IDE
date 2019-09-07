@@ -75,9 +75,10 @@ public slots:
     void openfolder();
     bool save();
     bool saveAs();
+
     void mycompile();
     void myrun();
-
+    void compile_run();
     void all_compile();
     void all_run();
 
@@ -167,6 +168,7 @@ private:
     QMenu *compileMenu;
     QAction *compileAct;//编译
     QAction *runAct;//运行
+    QAction *CompileRunAct;
     QAction *allCompileAct;
     QAction *allRunAct;
 
