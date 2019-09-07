@@ -565,13 +565,13 @@ void MainWindow::createActions()
     allCompileAct = new QAction(QIcon(":/images/all-compile.png"),tr("&All_Compile"),this);
     allCompileAct->setShortcut(tr("Ctrl+Shift+B"));
     allCompileAct->setStatusTip(tr("Find the specified content in current file"));
-    connect(allCompileAct, SIGNAL(triggered()), this, SLOT(mycompile()));
+    connect(allCompileAct, SIGNAL(triggered()), this, SLOT(all_compile()));
 
     //多文件运行
     allRunAct = new QAction(QIcon(":/images/all-run.png"),tr("&All_Run"),this);
     allRunAct->setShortcut(tr("Ctrl+Shift+R"));
     allRunAct->setStatusTip(tr("Find the specified content in current file"));
-    connect(allRunAct, SIGNAL(triggered()), this, SLOT(myrun()));
+    connect(allRunAct, SIGNAL(triggered()), this, SLOT(all_run()));
 
     //字体样式和大小
     fontAct = new QAction(QIcon(":/images/font.png"),tr("&Font"),this);
