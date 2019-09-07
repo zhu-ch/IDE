@@ -80,6 +80,7 @@ public slots:
     void myrun();
     void compile_run();
     void all_compile();
+    QList<QString> findHead();
     void all_run();
 
     void about();

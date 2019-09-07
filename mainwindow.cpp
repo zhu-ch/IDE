@@ -344,6 +344,41 @@ void MainWindow::compile_run(){
     }
 }
 
+QList<QString> MainWindow::findHead(){//寻找多文件编译的外部头文件
+    qDebug()<<"进入查找";
+    int block_number_1;int block_number_2;int column_number_1;int column_number_2;
+    int include_num;int temp_block_number;int temp_column_number;
+    QList<QString>include_list;//存储所有的头文件.h前的内容
+    include_num=0;//总共找到的带""的头文件数量
+    QString star="#include\"";
+    QString end=".h\"";
+    temp_block_number=0;temp_column_number=0;//存储找到的第一个的位置，这样查够一轮后退出
+    if(textEdit->findFirst(star, false, true, false, true, true)){//此时光标在#include"后
+        include_num++;
+        textEdit->getCursorPosition(&block_number_1,&column_number_1);
+        temp_block_number=block_number_1;temp_column_number=column_number_1;
+        textEdit->findFirst(end, false, true, false, true, true);//此时光标在.h"后
+        textEdit->getCursorPosition(&block_number_2,&column_number_2);
+        textEdit->setSelection(block_number_1,column_number_1,block_number_2,column_number_2-3);//-3是为了去除.h"三个字符
+        include_list.append(textEdit->selectedText());
+        while(textEdit->findFirst(star, false, true, false, true, true)){
+            include_num++;
+            textEdit->getCursorPosition(&block_number_1,&column_number_1);
+            if(temp_block_number==block_number_1&&temp_column_number==column_number_1){//搜够一轮又回来了，结束
+                include_num--;
+                break;
+            }
+            textEdit->findFirst(end, false, true, false, true, true);
+            textEdit->getCursorPosition(&block_number_2,&column_number_2);
+            textEdit->setSelection(block_number_1,column_number_1,block_number_2,column_number_2-3);
+            qDebug()<<textEdit->selectedText();
+            include_list.append(textEdit->selectedText());
+        }
+    }
+
+    return include_list;
+}
+
 void MainWindow::all_compile(){
     if(maybeSave()){
         /*预编译部分*/
@@ -372,9 +407,33 @@ void MainWindow::all_compile(){
         cmd = "g++ -o "+filename+".exe ";
         cmd += filename+".cpp";
 
-        //TODO 循环加入
+        //获取路径
+        QString path="";
+        int index_path_end;
+        for(int i=filename.size();i>=0;i--){
+            //qDebug()<<filename.at(i);
+            if(filename.at(i)=="/"){
+                index_path_end=i;
+                break;
+            }
+        }
+        //qDebug()<<index_path_end;
+        for(int i=0;i<=index_path_end;i++){
+            path+=filename.at(i);
+        }
+        //qDebug()<<path;
 
-        cmd += "2>"+filename+".log";
+        //进行拼接
+        QList<QString> headList = findHead();//BUG 没有头文件
+        qDebug()<<headList.size();
+        QString head;
+        for(int i=0;i<headList.size();i++){
+            head = headList.at(i);
+            qDebug()<<head;
+            cmd += " "+path+head+".cpp";
+        }
+
+        cmd += " 2>"+filename+".log -g";
         qDebug()<<cmd.toStdString().data();
         system(cmd.toStdString().data());
 
@@ -1115,7 +1174,7 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == 40 || keyEvent->key() == 91 || keyEvent->key() == 123
                 || keyEvent->key() == 34 || keyEvent->key() == 39){
-            qDebug("Ate key press %d", keyEvent->key());
+            //qDebug("Ate key press %d", keyEvent->key());
             emit keyPressSiganl_puncComplete(keyEvent->key());
             return true;
         }
