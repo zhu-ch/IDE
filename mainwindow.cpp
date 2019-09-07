@@ -350,7 +350,7 @@ QList<QString> MainWindow::findHead(){//寻找多文件编译的外部头文件
     int include_num;int temp_block_number;int temp_column_number;
     QList<QString>include_list;//存储所有的头文件.h前的内容
     include_num=0;//总共找到的带""的头文件数量
-    QString star="#include\"";
+    QString star="#include \"";
     QString end=".h\"";
     temp_block_number=0;temp_column_number=0;//存储找到的第一个的位置，这样查够一轮后退出
     if(textEdit->findFirst(star, false, true, false, true, true)){//此时光标在#include"后
