@@ -204,9 +204,11 @@ private:
     void init_statusBar(); //初始化状态栏
 
     //多行注释
-    int h_from;
-    int h_to;
-    int i;int temp;int aa;int bb;
+    int lineFrom;
+    int indexFrom;
+
+    int lineTo;
+    int indexTo;
 };
 
 #endif

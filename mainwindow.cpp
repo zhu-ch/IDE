@@ -245,7 +245,6 @@ bool MainWindow::LoadLogFile(const QString &fileName)
     return isSucess;
 }
 void MainWindow::mycompile(){
-    //QMessageBox::information(NULL, "Title", "Test", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     if(maybeSave()){
         /*预编译部分*/
         //QString filename = QFileDialog::getSaveFileName(this);
@@ -301,11 +300,60 @@ void MainWindow::myrun(){
 }
 
 void MainWindow::all_compile(){
+    if(maybeSave()){
+        /*预编译部分*/
+        //QString filename = QFileDialog::getSaveFileName(this);
+        QString filename = curFile;
+        FILE *p = fopen(filename.toStdString().data(),"r");
+        if(p == NULL) return ;
 
+        QString cppfile = filename +".c";
+        //qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
+        FILE *p1 = fopen(cppfile.toStdString().data(),"w");
+        if(p1 == NULL) return ;
+
+        QString str;
+        while(!feof(p))
+        {
+            char buf[1024] = {0};
+            fgets(buf,sizeof(buf),p);
+            str += buf;
+        }
+        fputs(str.toStdString().data(),p1);
+        fclose(p);
+        fclose(p1);
+        QString cmd;
+
+        cmd = "g++ -o "+filename+".exe ";
+        cmd += filename+".cpp";
+
+        //TODO 循环加入
+
+
+        cmd += "2>"+filename+".log";
+        qDebug()<<cmd.toStdString().data();
+        system(cmd.toStdString().data());
+
+        //判断是否编译成功
+        QString LOG = filename.toStdString().data();
+        if(LoadLogFile(LOG+".log")){
+            qDebug()<<"可以运行";
+        }
+
+    }else{
+        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    }
 }
 
 void MainWindow::all_run(){
-
+    QString LOG = curFile.toStdString().data();
+    if(LoadLogFile(LOG+".log")){
+        qDebug()<<"可以运行";
+        QString cmd = curFile + ".exe";
+        system(cmd.toStdString().data());
+    }else{
+        qDebug()<<"编译失败";
+    }
 }
 
 //关于 ok
@@ -1032,7 +1080,7 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
  * date 2019/8/31
  * */
 void MainWindow::handlePuncComplete(int key){
-    qDebug("handleBraceComplete %d", key);
+    //qDebug("handleBraceComplete %d", key);
     this->textEdit->getCursorPosition(&cursorLine, &cursorIndex);
     switch (key) {
     case 34://"
@@ -1085,18 +1133,32 @@ second_statusLabel->setText(tr( "Ready"));
  * date 2019/9/2
  * */
 void MainWindow::Annotation(){
-     qDebug()<<"aa";
-    textEdit->getSelection(&h_from,&aa,&h_to,&bb);
-    if(h_from>h_to){
-        temp=h_from;
-        h_from=h_to;
-        h_to=temp;//先比大小，保证h_from<h_to
+    textEdit->getSelection(&lineFrom,&indexFrom,&lineTo,&indexTo);
+    if(lineFrom>lineTo){
+        int temp;
+        temp=lineFrom;
+        lineFrom=lineTo;
+        lineTo=temp;
     }
-    qDebug()<<h_from;
-    qDebug()<<h_to;
-    for(i=h_from;i<=h_to;i++){
-        textEdit->insertAt (tr("//"), i, 0 );
-        qDebug()<<"bb";
+    bool flag = 0;
+    for(int i=lineFrom;i<=lineTo;i++){
+        //qDebug()<<textEdit->wordAtLineIndex(i,0);
+        if(textEdit->wordAtLineIndex(i,0)!=""){
+            flag =1;
+            break;
+        }
+    }
+    if(flag){//添加注释
+        //qDebug()<<"添加注释";
+        for(int i=lineFrom;i<=lineTo;i++){
+            textEdit->insertAt (tr("//"), i, 0 );
+        }
+    }else{//取消注释
+        //qDebug()<<"取消注释";
+        for(int i=lineFrom;i<=lineTo;i++){
+            textEdit->setSelection(i,0,i,2);
+            textEdit->removeSelectedText();
+        }
     }
 
 }
