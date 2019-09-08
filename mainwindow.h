@@ -1,39 +1,48 @@
-/****************************************************************************
-**
-** Copyright (C) 2004-2006 Trolltech ASA. All rights reserved.
-**
-** This file is part of the example classes of the Qt Toolkit.
-**
-** Licensees holding a valid Qt License Agreement may use this file in
-** accordance with the rights, responsibilities and obligations
-** contained therein.  Please consult your licensing agreement or
-** contact sales@trolltech.com if any conditions of this licensing
-** agreement are not clear to you.
-**
-** Further information about Qt licensing is available at:
-** http://www.trolltech.com/products/qt/licensing.html or by
-** contacting info@trolltech.com.
-**
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
-****************************************************************************/
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <Qsci/qscilexercpp.h>
+
 #include <QDialog>
 #include <QLabel>
-#include <stdio.h>
 #include <QShortcut>
 #include <QTextCodec>
 #include <QSplitter>
 #include <QDirModel>
+#include <QAction>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QFontDialog>
+#include <QColorDialog>
+#include <QFile>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QIcon>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QPoint>
+#include <QSettings>
+#include <QSize>
+#include <QStatusBar>
+#include <QTextStream>
+#include <QToolBar>
+#include <QDebug>
+#include <QKeyEvent>
+
+#include <Qsci/qscilexercpp.h>
+#include<Qsci/qsciscintilla.h>
+#include <Qsci/qscilexerlua.h>
+#include <Qsci/qsciapis.h>
+
+#include <stdio.h>
+#include <vector>
+#include <set>
+
 #include "finddialog.h"
 #include "replacedialog.h"
 #include "myqtreeview.h"
+#include "debugdialog.h"
 
 class QAction;
 class QMenu;
@@ -82,6 +91,7 @@ public slots:
     void all_compile();
     QList<QString> findHead();
     void all_run();
+    void debugSlot();
 
     void about();
     void documentWasModified();
@@ -172,6 +182,7 @@ private:
     QAction *CompileRunAct;
     QAction *allCompileAct;
     QAction *allRunAct;
+    QAction *debugAct;
 
     //格式
     QMenu *formMenu;
@@ -212,6 +223,10 @@ private:
 
     int lineTo;
     int indexTo;
+
+    //debug
+    std::vector<int> breakpoints;//断点集合
+    DebugDialog debugDialog;//debug窗口
 };
 
 #endif

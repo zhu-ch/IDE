@@ -22,5 +22,6 @@
         <file>images/all-compile.png</file>
         <file>images/all-run.png</file>
         <file>images/compile_run.png</file>
+        <file>images/debug.png</file>
     </qresource>
 </RCC>

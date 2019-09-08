@@ -8,12 +8,14 @@ HEADERS      = mainwindow.h \
     FindDialog.h \
     ReplaceDialog.h \
     myqtreeview.h \
-    runthread.h
+    runthread.h \
+    debugdialog.h
 SOURCES      = main.cpp mainwindow.cpp \
     FindDialog.cpp \
     ReplaceDialog.cpp \
     myqtreeview.cpp \
-    runthread.cpp
+    runthread.cpp \
+    debugdialog.cpp
 RESOURCES    = application.qrc
 
 #以下为新增

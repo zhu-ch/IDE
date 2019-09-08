@@ -1,51 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2004-2006 Trolltech ASA. All rights reserved.
-**
-** This file is part of the example classes of the Qt Toolkit.
-**
-** Licensees holding a valid Qt License Agreement may use this file in
-** accordance with the rights, responsibilities and obligations
-** contained therein.  Please consult your licensing agreement or
-** contact sales@trolltech.com if any conditions of this licensing
-** agreement are not clear to you.
-**
-** Further information about Qt licensing is available at:
-** http://www.trolltech.com/products/qt/licensing.html or by
-** contacting info@trolltech.com.
-**
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
-****************************************************************************/
-
-#include <QAction>
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDialog>
-#include <QFontDialog>
-#include <QColorDialog>
-#include <QFile>
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QIcon>
-#include <QMenu>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QPoint>
-#include <QSettings>
-#include <QSize>
-#include <QStatusBar>
-#include <QTextStream>
-#include <QToolBar>
-#include <QDebug>
-#include <QKeyEvent>
-#include <set>
-
-#include<Qsci/qsciscintilla.h>
-#include <Qsci/qscilexerlua.h>
-#include <Qsci/qsciapis.h>
-
 #include "mainwindow.h"
 #include "replacedialog.h"
 #include "finddialog.h"
@@ -480,26 +432,58 @@ void MainWindow::documentWasModified()
 {
     setWindowModified(textEdit->isModified());
 }
-//点击断点区域后执行的函数
+
+
+/*
+ * author zjm zch
+ * description 断点
+ * date 2019/8/29
+ * modify 2019/9/7
+ * */
 void MainWindow::on_margin_clicked(int margin, int line, Qt::KeyboardModifiers state)
 {
     Q_UNUSED(state);
 
-    if (margin == 1) {//当前位置有断点 去掉
-        if (textEdit->markersAtLine(line) != 0) {
+    if (margin == 1) {
+        if (textEdit->markersAtLine(line) != 0) {//当前位置有断点 去掉
             textEdit->markerDelete(line, 1);
-//            做一些去掉断点的逻辑程序
-        } else {//当前位置无断点 添加
+            for(std::vector<int>::iterator it = breakpoints.begin(); it != breakpoints.end(); ){
+                if(*it == line + 1)
+                    it = breakpoints.erase(it);
+                else
+                   ++it;
+            }
+            for(std::vector<int>::iterator it = breakpoints.begin(); it != breakpoints.end(); ){
+                qDebug()<<*it;
+                it++;
+            }
+            qDebug()<<"end";
+            debugDialog.setBreakpoints(breakpoints);
+        }
+        else {//当前位置无断点 添加
             textEdit->markerAdd(line, 1);
-//            做一些增加断点的逻辑程序
+            breakpoints.push_back(line + 1);//从1开始
+            for(std::vector<int>::iterator it = breakpoints.begin(); it != breakpoints.end(); ){
+                qDebug()<<*it;
+                it++;
+            }
+            qDebug()<<"end";
+            debugDialog.setBreakpoints(breakpoints);
         }
     }
 }
+
+/*
+ * author lzy zch
+ * description 行号列号
+ * date 2019/9/4
+ * modify 2019/9/8
+ * */
 void MainWindow::do_cursorChanged(){
     textEdit->getCursorPosition(&cursorLine,&cursorIndex);
 
-    QString Tip = QString("Current ColNum： ") + QString::number(cursorLine)
-            + QString("     Current RowNum： ") + QString::number(cursorIndex);
+    QString Tip = QString("Current ColNum： ") + QString::number(cursorIndex + 1)
+            + QString("     Current RowNum： ") + QString::number(cursorLine + 1);
     first_statusLabel->setText(Tip);
 }
 
@@ -738,6 +722,12 @@ void MainWindow::createActions()
     allRunAct->setStatusTip(tr("Find the specified content in current file"));
     connect(allRunAct, SIGNAL(triggered()), this, SLOT(all_run()));
 
+    //debug
+    debugAct = new QAction(QIcon(":/images/debug.png"),tr("&debug"),this);
+    debugAct->setShortcut(tr("F5"));
+    debugAct->setStatusTip(tr("Open debug dialog and start debug mode"));
+    connect(debugAct, SIGNAL(triggered()), this, SLOT(debugSlot()));
+
     //字体样式和大小
     fontAct = new QAction(QIcon(":/images/font.png"),tr("&Font"),this);
     fontAct->setShortcut(tr("Ctrl+Shift+F"));
@@ -777,7 +767,7 @@ void MainWindow::createActions()
  * author zjm zch zll
  * description 创建菜单栏
  * date 2019/8/29
- * modify 2019/8/30
+ * modify 2019/9/7
  * */
 void MainWindow::createMenus()
 {
@@ -805,12 +795,13 @@ void MainWindow::createMenus()
 
 
     //编译运行
-    compileMenu = menuBar()->addMenu(tr("&Compile - Run"));
+    compileMenu = menuBar()->addMenu(tr("&Run"));
     compileMenu->addAction(compileAct);
     compileMenu->addAction(runAct);
     compileMenu->addAction(CompileRunAct);
     compileMenu->addAction(allCompileAct);
     compileMenu->addAction(allRunAct);
+    compileMenu->addAction(debugAct);
 
 
     //帮助
@@ -865,18 +856,6 @@ void MainWindow::createToolBars()
     formToolBar->addAction(fontAct);
     formToolBar->addAction(colorAct);
 }
-
-
-/*
- * author zjm
- * description 创建工具栏
- * date 2019/8/29
- * */
-/*void MainWindow::createStatusBar()
-{
-    statusBar()->showMessage(tr("Ready"));
-}
-*/
 
 /*
  * author zjm
@@ -1308,4 +1287,11 @@ void MainWindow::myTreeViewOpenFile(QModelIndex index){
         newMainWindow->loadFile(myqtreeview->selectFilePath);
         newMainWindow->show();
     }
+}
+
+void MainWindow::debugSlot(){
+    debugDialog.setProgram(curFile);
+    debugDialog.setBreakpoints(breakpoints);
+    debugDialog.show();
+    debugDialog.showProperties();
 }
