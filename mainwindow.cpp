@@ -197,18 +197,30 @@ bool MainWindow::LoadLogFile(const QString &fileName)
 
     return isSucess;
 }
-void MainWindow::mycompile(){
+
+/*
+ * author zjm
+ * description 单文件编译
+ * date 2019/8/30
+ *
+ * mender zch
+ * details
+ *      1.void -> bool
+ *      2.add "-g" in command
+ * date 2019/9/8
+ * */
+bool MainWindow::mycompile(){
     if(maybeSave()){
         /*预编译部分*/
         //QString filename = QFileDialog::getSaveFileName(this);
         QString filename = curFile;
         FILE *p = fopen(filename.toStdString().data(),"r");
-        if(p == NULL) return ;
+        if(p == NULL) return false;
 
         QString cppfile = filename +".c";
         //qDebug()<<tr("cppfile")<<tr(cppfile.toStdString().data());
         FILE *p1 = fopen(cppfile.toStdString().data(),"w");
-        if(p1 == NULL) return ;
+        if(p1 == NULL) return false;
 
         QString str;
         while(!feof(p))
@@ -225,19 +237,21 @@ void MainWindow::mycompile(){
         cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log -g",s,s,s);//-g是必须的
         system(cmd.toStdString().data());//先编译
 
-//        //如何删除那个临时文件呢
-//        cmd = filename.replace("/","\\") + ".c";
-//        remove(cmd.toStdString().data());
-
 
         //判断是否编译成功
         QString LOG = filename.toStdString().data();
         if(LoadLogFile(LOG+".log")){
             qDebug()<<"可以运行";
+            return true;
         }
-
-    }else{
-        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        else{
+            QMessageBox::information(NULL, "Compile", "编译失败", QMessageBox::Yes);
+            return false;
+        }
+    }
+    else{
+        QMessageBox::information(NULL, "Compile", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        return false;
     }
 }
 
@@ -283,11 +297,6 @@ void MainWindow::compile_run(){
         cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log",s,s,s);
         system(cmd.toStdString().data());//先编译
 
-//        //如何删除那个临时文件呢
-//        cmd = filename.replace("/","\\") + ".c";
-//        remove(cmd.toStdString().data());
-
-
         //判断是否编译成功
         QString LOG = filename.toStdString().data();
         if(LoadLogFile(LOG+".log")){
@@ -296,9 +305,11 @@ void MainWindow::compile_run(){
             connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
             rthread->start();
         }
+        else
+            QMessageBox::information(NULL, "Compile", "编译失败", QMessageBox::Yes);
 
     }else{
-        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        QMessageBox::information(NULL, "Compile", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     }
 }
 
@@ -400,9 +411,11 @@ void MainWindow::all_compile(){
         if(LoadLogFile(LOG+".log")){
             qDebug()<<"可以运行";
         }
+        else
+            QMessageBox::information(NULL, "Compile", "编译失败", QMessageBox::Yes);
 
     }else{
-        QMessageBox::information(NULL, "Title", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        QMessageBox::information(NULL, "Compile", "文件需保存成功", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     }
 }
 
@@ -1259,6 +1272,7 @@ void MainWindow::Annotation(){
         }
     }
 }
+
 /*
  * author zjm
  * description 树形目录打开文件
@@ -1289,9 +1303,17 @@ void MainWindow::myTreeViewOpenFile(QModelIndex index){
     }
 }
 
+/*
+ * author zch
+ * description debug窗口
+ * date 2019/9/8
+ * */
 void MainWindow::debugSlot(){
+    if(!mycompile())
+        return;
     debugDialog.setProgram(curFile);
     debugDialog.setBreakpoints(breakpoints);
+    debugDialog.initProperties();
     debugDialog.show();
-    debugDialog.showProperties();
+    //debugDialog.showProperties(); //debug需要的信息
 }

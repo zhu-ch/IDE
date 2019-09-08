@@ -1,18 +1,19 @@
 #include "debugdialog.h"
 
 DebugDialog::DebugDialog(){
-    initWIdgets();
+    initWidgets();
+    bindSignals();
 
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
 }
 
-void DebugDialog::initWIdgets(){
+void DebugDialog::initWidgets(){
     //初始化控件
     nextBtn = new QPushButton("单步跳过");
     stepBtn = new QPushButton("单步进入");
     continueBtn = new QPushButton("继续执行");
     runBtn = new QPushButton("开始调试");
-    quitBtn = new QPushButton("退出调试");
+    quitBtn = new QPushButton("结束调试");
     addVarBtn = new QPushButton("添加查看");
     inputVar = new QLineEdit();
     printArea = new QTextEdit();
@@ -42,7 +43,25 @@ void DebugDialog::initWIdgets(){
     //vbLayout->setSpacing(5);
 
     layout->addLayout(vbLayout,1,1);
+
+    setMinimumHeight(300);
+    setMinimumWidth(600);
     setLayout(layout);
+}
+
+void DebugDialog::initProperties(){
+    inputVar->setText("");
+    printArea->setText("");
+    var.clear();
+}
+
+void DebugDialog::bindSignals(){
+    connect(addVarBtn, &QPushButton::clicked, this, &DebugDialog::slotAddVar);
+    connect(runBtn, &QPushButton::clicked, this, &DebugDialog::slotRun);
+    connect(stepBtn, &QPushButton::clicked, this, &DebugDialog::slotStep);
+    connect(nextBtn, &QPushButton::clicked, this, &DebugDialog::slotNext);
+    connect(quitBtn, &QPushButton::clicked, this, &DebugDialog::slotQuit);
+    connect(continueBtn, &QPushButton::clicked, this, &DebugDialog::slotContinue);
 }
 
 void DebugDialog::setProgram(QString p){
@@ -73,6 +92,7 @@ void DebugDialog::slotContinue(){
 
 void DebugDialog::slotRun(){
     //先确定编译完成
+
 }
 
 void DebugDialog::slotQuit(){
@@ -80,7 +100,27 @@ void DebugDialog::slotQuit(){
 }
 
 void DebugDialog::slotAddVar(){
-    //printArea显示
+    QString toAddVar = inputVar->text();
+    if(toAddVar == ""){
+        QMessageBox msg(NULL);
+
+        msg.setWindowTitle("Add Watch");
+        msg.setText("No input");
+        msg.setIcon(QMessageBox::Information);
+        msg.setStandardButtons(QMessageBox::Ok);
+
+        msg.setWindowFlags(Qt::WindowStaysOnTopHint);//置顶
+        msg.setWindowFlags(msg.windowFlags() &~ Qt::WindowMinMaxButtonsHint);//禁用最大化最小化
+        msg.exec();
+    }
+    else{
+        var.push_back(toAddVar);
+        printArea->append("<p><font color = blue>Add Watch: " + toAddVar + "</font></p>");
+        QScrollBar *scrollbar = printArea->verticalScrollBar();
+        if (scrollbar)
+            scrollbar->setSliderPosition(scrollbar->maximum());
+        inputVar->setText("");
+    }
 }
 
 void DebugDialog::showProperties(){
@@ -90,5 +130,10 @@ void DebugDialog::showProperties(){
         qDebug()<<*it;
         it++;
     }
-    qDebug()<<"end";
+    qDebug()<<"end of breakpoints";
+    for(std::vector<QString>::iterator it = var.begin(); it != var.end(); ){
+        qDebug()<<*it;
+        it++;
+    }
+    qDebug()<<"end of var";
 }

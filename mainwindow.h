@@ -85,7 +85,7 @@ public slots:
     bool save();
     bool saveAs();
 
-    void mycompile();
+    bool mycompile();
     void myrun();
     void compile_run();
     void all_compile();

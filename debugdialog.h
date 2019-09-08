@@ -11,6 +11,9 @@
 #include <QProcess>
 #include <QString>
 #include <QDebug>
+#include <QMessageBox>
+#include <QScrollBar>
+
 #include <vector>
 
 class DebugDialog : public QDialog
@@ -20,6 +23,7 @@ public:
     void setProgram(QString);
     void setBreakpoints(std::vector<int>);
     void showProperties();
+    void initProperties();
 
 private slots:
     void slotNext();
@@ -42,10 +46,12 @@ private:
     QLineEdit *inputVar;//变量输入
     QTextEdit *printArea;//输出部分，只读
 
-    void initWIdgets();
+    void initWidgets();
+    void bindSignals();
 
     QString program;
     std::vector<int> breakpoints;
+    std::vector<QString> var;
 };
 
 #endif // DEBUGDIALOG_H
