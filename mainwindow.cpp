@@ -435,10 +435,13 @@ void MainWindow::all_run(){
 //关于 ok
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("About Application"),
-            tr("The <b>Application</b> example demonstrates how to "
-               "write modern GUI applications using Qt, with a menu bar, "
-               "toolbars, and a status bar."));
+   QMessageBox::about(this, tr("About us"),
+            tr("MiniIDE C语言编辑器 开发团队"
+               "1120173305 张佳明\n"
+               "1120171227 朱长昊\n"
+               "1120172167 湛蓝蓝\n"
+               "1120172164 刘震宇\n"
+               "1120171491 蒋雨彤\n"));
 }
 
 void MainWindow::documentWasModified()
