@@ -9,13 +9,15 @@ HEADERS      = mainwindow.h \
     ReplaceDialog.h \
     myqtreeview.h \
     runthread.h \
-    debugdialog.h
+    debugdialog.h \
+    debugthread.h
 SOURCES      = main.cpp mainwindow.cpp \
     FindDialog.cpp \
     ReplaceDialog.cpp \
     myqtreeview.cpp \
     runthread.cpp \
-    debugdialog.cpp
+    debugdialog.cpp \
+    debugthread.cpp
 RESOURCES    = application.qrc
 
 RC_FILE = my.rc

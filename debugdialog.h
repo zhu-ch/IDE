@@ -13,8 +13,11 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QProcess>
 
 #include <vector>
+
+#include "debugthread.h"
 
 class DebugDialog : public QDialog
 {
@@ -26,12 +29,10 @@ public:
     void initProperties();
 
 private slots:
-    void slotNext();
-    void slotStep();
-    void slotContinue();
     void slotRun();
     void slotQuit();
     void slotAddVar();
+    void updatePrint(QString, QString);
 
 private:
     QGridLayout *layout;
@@ -52,6 +53,9 @@ private:
     QString program;
     std::vector<int> breakpoints;
     std::vector<QString> var;
+
+    QProcess *process;
+    DebugThread *dthread;
 };
 
 #endif // DEBUGDIALOG_H

@@ -240,7 +240,7 @@ bool MainWindow::mycompile(){
         fclose(p1);
         QString cmd;
         const char *s = filename.toStdString().data();
-        cmd.sprintf("gcc -o %s.exe %s.c 2>%s.log -g",s,s,s);//-g是必须的
+        cmd.sprintf("gcc -g -o %s.exe %s.c 2>%s.log",s,s,s);//-g是必须的
         system(cmd.toStdString().data());//先编译
 
 
@@ -592,7 +592,6 @@ void MainWindow::setTextEdit()
 
     //7.设置编码为UTF-8
     textEdit->SendScintilla(QsciScintilla::SCI_SETCODEPAGE,QsciScintilla::SC_CP_UTF8);
-
 }
 
 
@@ -872,6 +871,7 @@ void MainWindow::createToolBars()
     compileToolBar->addAction(CompileRunAct);
     compileToolBar->addAction(allCompileAct);
     compileToolBar->addAction(allRunAct);
+    compileToolBar->addAction(debugAct);
 
     //格式
     formToolBar = addToolBar(tr("Form"));

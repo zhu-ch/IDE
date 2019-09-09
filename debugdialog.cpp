@@ -1,4 +1,5 @@
 #include "debugdialog.h"
+#include "debugthread.h"
 
 DebugDialog::DebugDialog(){
     initWidgets();
@@ -17,6 +18,12 @@ void DebugDialog::initWidgets(){
     addVarBtn = new QPushButton("添加查看");
     inputVar = new QLineEdit();
     printArea = new QTextEdit();
+
+    //未开始调试前c, n, s, q是无效的
+    nextBtn->setEnabled(false);
+    continueBtn->setEnabled(false);
+    quitBtn->setEnabled(false);
+    stepBtn->setEnabled(false);
 
     //输出部分只读
     printArea->setReadOnly(true);
@@ -51,17 +58,16 @@ void DebugDialog::initWidgets(){
 
 void DebugDialog::initProperties(){
     inputVar->setText("");
-    printArea->setText("");
+    inputVar->setPlaceholderText("在此输入查看的变量");
+    printArea->clear();
+    printArea->append("<p><font color = black>---debug output---</font></p>");
     var.clear();
 }
 
 void DebugDialog::bindSignals(){
     connect(addVarBtn, &QPushButton::clicked, this, &DebugDialog::slotAddVar);
     connect(runBtn, &QPushButton::clicked, this, &DebugDialog::slotRun);
-    connect(stepBtn, &QPushButton::clicked, this, &DebugDialog::slotStep);
-    connect(nextBtn, &QPushButton::clicked, this, &DebugDialog::slotNext);
     connect(quitBtn, &QPushButton::clicked, this, &DebugDialog::slotQuit);
-    connect(continueBtn, &QPushButton::clicked, this, &DebugDialog::slotContinue);
 }
 
 void DebugDialog::setProgram(QString p){
@@ -78,25 +84,39 @@ void DebugDialog::setBreakpoints(std::vector<int> b){
     this->breakpoints = b;
 }
 
-void DebugDialog::slotNext(){
-
-}
-
-void DebugDialog::slotStep(){
-
-}
-
-void DebugDialog::slotContinue(){
-
-}
-
 void DebugDialog::slotRun(){
-    //先确定编译完成
+    //已经确定编译完成
+    nextBtn->setEnabled(true);
+    continueBtn->setEnabled(true);
+    quitBtn->setEnabled(true);
+    stepBtn->setEnabled(true);
+    runBtn->setEnabled(false);
+    addVarBtn->setEnabled(false);
 
+//    process = new QProcess();
+
+    //dthread = new DebugThread(program, breakpoints, var, process);
+    dthread = new DebugThread(program, breakpoints, var);
+
+//    process->moveToThread(dthread);
+    connect(dthread, &DebugThread::finished, dthread, &QObject::deleteLater);
+
+    connect(dthread, &DebugThread::updateSignal, this, &DebugDialog::updatePrint);
+    connect(dthread, &DebugThread::quitSignal, this, &DebugDialog::slotQuit);
+    connect(stepBtn, &QPushButton::clicked, dthread, &DebugThread::handleStep);
+    connect(nextBtn, &QPushButton::clicked, dthread, &DebugThread::handleNext);
+    connect(continueBtn, &QPushButton::clicked, dthread, &DebugThread::handleContinue);
+    connect(quitBtn, &QPushButton::clicked, dthread, &DebugThread::handleQuit);
+    dthread->start();
 }
 
 void DebugDialog::slotQuit(){
-
+    addVarBtn->setEnabled(true);
+    nextBtn->setEnabled(false);
+    continueBtn->setEnabled(false);
+    quitBtn->setEnabled(false);
+    runBtn->setEnabled(true);
+    stepBtn->setEnabled(false);
 }
 
 void DebugDialog::slotAddVar(){
@@ -136,4 +156,11 @@ void DebugDialog::showProperties(){
         it++;
     }
     qDebug()<<"end of var";
+}
+
+void DebugDialog::updatePrint(QString retMsg, QString color){
+    printArea->append("<p><font color = " + color + ">" + retMsg + "</font></p>");
+    QScrollBar *scrollbar = printArea->verticalScrollBar();
+    if (scrollbar)
+        scrollbar->setSliderPosition(scrollbar->maximum());
 }
