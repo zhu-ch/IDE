@@ -28,6 +28,7 @@ MainWindow::MainWindow()
     keyPressEater = new MyKeyPressEater;
 
     QWidget* mainWidget = new QWidget;      //主窗口
+    QWidget* rightAreaWidget = new QWidget;
 
     setCentralWidget(textEdit);
     createActions();//点击按钮与函数进行绑定
@@ -36,7 +37,8 @@ MainWindow::MainWindow()
     //createStatusBar();//状态栏
     init_statusBar();//状态栏
     bindSignals();//绑定信号
-    mainLayout = new QVBoxLayout;
+    mainLayoutV = new QVBoxLayout;
+    mainLayoutH = new QHBoxLayout;
     setTextEdit();//代码编辑区
     initLogtext();//编译信息提示区域
 
@@ -49,15 +51,19 @@ MainWindow::MainWindow()
     myqtreeview->setModel(myqtreeview->model);
     fileDir="C:\\Users\\Zhangjiaming\\Desktop";
     myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
-    myqtreeview->setColumnWidth(0,300);
+    myqtreeview->setColumnWidth(0,280);
     myqtreeview->hideColumn(1);
     myqtreeview->hideColumn(2);
+    myqtreeview->setMaximumWidth(400);
     connect(myqtreeview,SIGNAL(doubleClicked(const QModelIndex& )),this,SLOT(myTreeViewOpenFile(QModelIndex)));
     //设置layout布局
-    mainLayout->addWidget(textEdit, 0);
-    mainLayout->addWidget(LogText);
-    mainLayout->addWidget(myqtreeview);//添加树形控件
-    mainWidget->setLayout(mainLayout);
+    mainLayoutV->addWidget(textEdit, 0);
+    mainLayoutV->addWidget(LogText);
+//    mainLayoutV->addWidget(myqtreeview);//添加树形控件
+    rightAreaWidget->setLayout(mainLayoutV);
+    mainLayoutH->addWidget(myqtreeview);
+    mainLayoutH->addWidget(rightAreaWidget);
+    mainWidget->setLayout(mainLayoutH);
     this->setCentralWidget(mainWidget);
 
 

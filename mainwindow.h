@@ -136,7 +136,7 @@ private:
     //QLineEdit *fontLineEdit;            //颜色
     //QscilexerCppAttach *textLexer;
     QsciLexer *textLexer;               //语法分析器
-    QTextEdit *LogText;                 //build log text
+    QTextEdit *LogText;                 //控制台
     QString curFile;                    //当前打开文件的路径
 
     //树形目录部分
@@ -199,7 +199,8 @@ private:
     ReplaceDialog replaceDialog;
 
     //QgridLayout
-    QVBoxLayout *mainLayout;    //格子布局
+    QVBoxLayout *mainLayoutV;    //格子布局
+    QHBoxLayout *mainLayoutH;
 
     //变量重命名相关：因为没法实现匿名函数所以需要的变量
     QString variableName;
