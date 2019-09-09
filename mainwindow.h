@@ -134,6 +134,8 @@ private:
     void setCurrentFileName(const QString &fileName);
     //QString strippedName(const QString &fullFileName);
     void lineFormatting(int linenumber);//行代码格式化
+    void Formatting_All();
+    void Enter_Formatting(int linenum,int indexnum);
 
     QsciScintilla *textEdit;            //代码编辑框
     //QFrame *colorFrame;                 //样式 大小

@@ -1191,7 +1191,8 @@ bool MyKeyPressEater::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == 40 || keyEvent->key() == 91 || keyEvent->key() == 123
-                || keyEvent->key() == 34 || keyEvent->key() == 39||keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return){
+                || keyEvent->key() == 34 || keyEvent->key() == 39||keyEvent->key() ==59
+                ||keyEvent->key() ==Qt::Key_Enter||keyEvent->key() ==Qt::Key_Return){
             //qDebug("Ate key press %d", keyEvent->key());
             emit keyPressSiganl_puncComplete(keyEvent->key());
             return true;
@@ -1226,12 +1227,18 @@ void MainWindow::handlePuncComplete(int key){
         break;
     case 123://{
         this->textEdit->insert(tr("{}"));
+        //Formatting_All();
         break;
     case Qt::Key_Enter://两个键都是监听回车
     case Qt::Key_Return:
         this->textEdit->insert(tr("\n"));
-        lineFormatting(cursorLine);
+        Enter_Formatting(cursorLine,cursorIndex);
+        this->textEdit->setCursorPosition(cursorLine+1, 0);
         return;
+     case 59://;
+             this->textEdit->insert(tr(";"));
+            lineFormatting(cursorLine);
+            return;
     default:
         break;
     }
@@ -1343,13 +1350,14 @@ void MainWindow::debugSlot(){
 /*
  * author lzy
  * description 行代码格式化
- * BUG ++,-- 光标位置
+ * //BUG 缩进
+ * //TODO 头文件中间的空格
  * date 2019/9/9
  * */
 void MainWindow::lineFormatting(int linenum){//传入行号
     QList<QString> keyword_table;
-    keyword_table<<"+"<<"-"<<"*"<<"/"<<"("<<")"<<"="<<"<"<<">"<<";";
-    int last_indexnum;//存储最后一次进行修改的位置，在此位置打回车
+    keyword_table<<"+"<<"-"<<"*"<<"/"<<"("<<")"<<"="<<"<"<<">"<<","<<";";
+    //int last_indexnum=-1;//存储最后一次进行修改的位置，在此位置打回车
     for(int indexnum=0;indexnum<200;indexnum++){//默认一行不超过200个字符
         textEdit->setSelection(linenum,indexnum,linenum,indexnum+1);
         for(int i=0;i<keyword_table.size();i++){
@@ -1359,12 +1367,14 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
                 if(textEdit->selectedText()==" "||textEdit->selectedText()=="+");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 break;
             }
@@ -1374,12 +1384,14 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
                 if(textEdit->selectedText()==" "||textEdit->selectedText()=="-");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 break;
             }
@@ -1389,17 +1401,39 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
                 if(textEdit->selectedText()==" ");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    //last_indexnum=indexnum;
                 }
                 break;
             }
         }
     }
+    for(int i=200;i>=0;i--){
+        textEdit->setSelection(linenum,i,linenum,i+1);
+        if(textEdit->selectedText()==";"){
+            this->textEdit->setCursorPosition(linenum, i+1);
+            return;
+        }
+    }
+}
+void MainWindow::Formatting_All(){
+    int index_from,index_to,line_from,line_to;
+    textEdit->selectAll();
+    textEdit->getSelection(&line_from,&index_from,&line_to,&index_to);
+    for(int i=0;i<line_to;i++){
+        lineFormatting(i);
+    }
+}
+void MainWindow::Enter_Formatting(int linenum,int indexnum){
+     textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);
+     if(textEdit->selectedText()=="{")
+     this->textEdit->insert(tr("\n"));
 }
 /*
  * author zll
