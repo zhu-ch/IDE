@@ -2,6 +2,7 @@
 #include "replacedialog.h"
 #include "finddialog.h"
 #include "runthread.h"
+#include "debugdialog.h"
 
 /*
  * author zjm
@@ -119,6 +120,10 @@ void MainWindow::bindSignals(){
     //键盘监听
     connect(keyPressEater, SIGNAL(keyPressSiganl_puncComplete(int)), this, SLOT(handlePuncComplete(int)));
     connect(textEdit,SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)),this,SLOT(jumpDefination(int,int,Qt::KeyboardModifiers)));
+
+    //更新单步执行
+    connect(&debugDialog, SIGNAL(signalUpdateMarker(int)), this, SLOT(updateLineNumberSlot(int)));
+    connect(&debugDialog, SIGNAL(signalClearMarker()), this, SLOT(clearMarker()));
 }
 
 
@@ -1347,11 +1352,37 @@ void MainWindow::debugSlot(){
     debugDialog.show();
     //debugDialog.showProperties(); //debug需要的信息
 }
+
+/*
+ * author zch
+ * description 单步执行标记
+ * date 2019/9/9
+ * */
+void MainWindow::updateLineNumberSlot(int num){
+    qDebug()<<"###### mianwindow: "<<num;
+    clearMarker();
+    textEdit->markerAdd(num - 1, 2);
+}
+
+/*
+ * author zch
+ * description 清除单步执行标记
+ * date 2019/9/9
+ * */
+void MainWindow::clearMarker(){
+    QString tmp = textEdit->text();
+    int n = tmp.size();
+    int idx,lne;
+    textEdit->lineIndexFromPosition(n,&lne,&idx);
+    for(int i = 0; i < lne + 2; i++)
+        textEdit->markerDelete(i, 2);
+}
+
 /*
  * author lzy
  * description 行代码格式化
- * //BUG 缩进
- * //TODO 头文件中间的空格
+ * BUG 缩进
+ * TODO 头文件中间的空格
  * date 2019/9/9
  * */
 void MainWindow::lineFormatting(int linenum){//传入行号

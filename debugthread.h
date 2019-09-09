@@ -17,6 +17,7 @@ public:
 
 signals:
     void updateSignal(QString info, QString color);
+    void updateLineNumber(int);
     void quitSignal();
 
 public slots:

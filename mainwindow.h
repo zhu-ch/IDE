@@ -117,6 +117,9 @@ public slots:
 
     void myTreeViewOpenFile(QModelIndex);
 
+    void updateLineNumberSlot(int);
+    void clearMarker();
+
 private:
     void bindSignals();
     void setTextEdit();                             //代码编辑区

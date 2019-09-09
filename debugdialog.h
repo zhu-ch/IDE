@@ -21,6 +21,8 @@
 
 class DebugDialog : public QDialog
 {
+    Q_OBJECT
+
 public:
     DebugDialog();
     void setProgram(QString);
@@ -28,11 +30,16 @@ public:
     void showProperties();
     void initProperties();
 
+signals:
+    void signalUpdateMarker(int);
+    void signalClearMarker();
+
 private slots:
     void slotRun();
     void slotQuit();
     void slotAddVar();
     void updatePrint(QString, QString);
+    void updateMarker(int);
 
 private:
     QGridLayout *layout;

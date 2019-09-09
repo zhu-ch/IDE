@@ -103,6 +103,7 @@ void DebugDialog::slotRun(){
 
     connect(dthread, &DebugThread::updateSignal, this, &DebugDialog::updatePrint);
     connect(dthread, &DebugThread::quitSignal, this, &DebugDialog::slotQuit);
+    connect(dthread, &DebugThread::updateLineNumber, this, &DebugDialog::updateMarker);
     connect(stepBtn, &QPushButton::clicked, dthread, &DebugThread::handleStep);
     connect(nextBtn, &QPushButton::clicked, dthread, &DebugThread::handleNext);
     connect(continueBtn, &QPushButton::clicked, dthread, &DebugThread::handleContinue);
@@ -117,6 +118,7 @@ void DebugDialog::slotQuit(){
     quitBtn->setEnabled(false);
     runBtn->setEnabled(true);
     stepBtn->setEnabled(false);
+    emit signalClearMarker();
 }
 
 void DebugDialog::slotAddVar(){
@@ -163,4 +165,9 @@ void DebugDialog::updatePrint(QString retMsg, QString color){
     QScrollBar *scrollbar = printArea->verticalScrollBar();
     if (scrollbar)
         scrollbar->setSliderPosition(scrollbar->maximum());
+}
+
+void DebugDialog::updateMarker(int num){
+    qDebug()<<"###### debugdialog: "<<num;
+    emit signalUpdateMarker(num);
 }

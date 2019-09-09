@@ -47,7 +47,7 @@ void DebugThread::run(){
         process->write("r\r\n");
         process->waitForFinished(500);
 
-        //获取变量值，更新
+        //第一个断点处获取变量值，更新
         for(std::vector<QString>::iterator it = var.begin(); it != var.end(); it++){
             cmd = "p " + (*it) + "\r\n";
             process->write(cmd.toStdString().data());
@@ -56,10 +56,10 @@ void DebugThread::run(){
             if(updateFlag){
                 if(retMsg.indexOf("=") > -1){
                     retMsg = retMsg.mid(retMsg.indexOf("="));
-                    emit updateSignal("----" + (*it) + " " + retMsg, "black");
+                    emit updateSignal((*it) + " " + retMsg, "black");
                 }
                 else
-                    emit updateSignal("----" + (*it) + " : cannot find", "black");
+                    emit updateSignal((*it) + " : cannot find", "black");
             }
         }
 
@@ -76,17 +76,16 @@ void DebugThread::run(){
                 //获取变量值，更新
                 for(std::vector<QString>::iterator it = var.begin(); it != var.end(); it++){
                     cmd = "p " + (*it) + "\r\n";
-                    qDebug()<<cmd;
                     process->write(cmd.toStdString().data());
                     process->waitForFinished(500);
 
                     if(updateFlag){
                         if(retMsg.indexOf("=") > -1){
                             retMsg = retMsg.mid(retMsg.indexOf("="));
-                            emit updateSignal("----" + (*it) + " " + retMsg, "black");
+                            emit updateSignal((*it) + " " + retMsg, "black");
                         }
                         else
-                            emit updateSignal("----" + (*it) + " : cannot find", "black");
+                            emit updateSignal((*it) + " : cannot find", "black");
                     }
                 }
 
@@ -158,22 +157,30 @@ void DebugThread::read(){
             retMsg = tmp;
         }
 
-//        //输出行号
-//        if(tmp.indexOf("\t\t") > -1){
-//            qDebug()<<"################"<<tmp.mid(5, tmp.indexOf("\t\t") - 5);
-//            if(tmp.indexOf("(gdb)") < 0)
-//                emit updateSignal("line " + tmp.left(tmp.indexOf("\t\t")) + ":","green");
-//            else{
-//                qDebug()<<tmp.mid(5, tmp.indexOf("\t\t") - 5);
-//                emit updateSignal("line" + tmp.mid(5, tmp.indexOf("\t\t") - 5) + ":", "green");
-//            }
-//        }
-
         //输出行号
-        if(tmp.indexOf(program+".c:") > -1){
+        if(tmp.indexOf("\t\t") > -1){
             updateFlag = true;
-            if(!sigFault)
-                emit updateSignal("line " + tmp.right(3) + ":","green");
+            if(!sigFault){
+                if(tmp.indexOf("(gdb)") < 0){
+                    qDebug()<<"###### debugthread: "<<tmp.left(tmp.indexOf("\t\t")).toInt();
+                    emit updateLineNumber(tmp.left(tmp.indexOf("\t\t")).toInt());
+                    //emit updateSignal(tmp.left(tmp.indexOf("\t\t")), "green");
+                }
+                else{
+                    while(tmp.indexOf("(gdb)") > -1)
+                        tmp.replace("(gdb)", "");
+                    qDebug()<<"###### debugthread: "<<tmp.left(tmp.indexOf("\t\t")).toInt();
+                    emit updateLineNumber(tmp.left(tmp.indexOf("\t\t")).toInt());
+                    //emit updateSignal(tmp.left(tmp.indexOf("\t\t")), "green");
+                }
+            }
         }
+
+//        //输出行号
+//        if(tmp.indexOf(program+".c:") > -1){
+//            updateFlag = true;
+//            if(!sigFault)
+//                emit updateSignal("line " + tmp.right(3) + ":","green");
+//        }
     }
 }
