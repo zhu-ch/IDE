@@ -18,6 +18,8 @@ SOURCES      = main.cpp mainwindow.cpp \
     debugdialog.cpp
 RESOURCES    = application.qrc
 
+RC_FILE = my.rc
+
 #以下为新增
 QT += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
