@@ -70,6 +70,13 @@ MainWindow::MainWindow()
     readSettings();
     setCurrentFileName("");
     move(0, 0);
+
+    indicNum =  textEdit->indicatorDefine(QsciScintilla::TextColorIndicator);//function highlighter
+    textEdit -> setIndicatorForegroundColor(Qt::darkYellow,indicNum);//function color
+    textEdit -> setIndicatorHoverStyle( QsciScintilla::ThinCompositionIndicator,indicNum);
+    textEdit->setIndicatorHoverForegroundColor(Qt::blue,indicNum);
+    iconCPP = textLexer->keywords(1);
+    iconCPP += textLexer->keywords(3);
 }
 //关闭窗口事件
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -99,6 +106,7 @@ void MainWindow::wheelEvent(QWheelEvent *event)
  * date 2019/8/29
  * */
 void MainWindow::bindSignals(){
+    connect(textEdit, SIGNAL(textChanged()),this, SLOT(funcHighlighter()));
     connect(textEdit, SIGNAL(textChanged()),this, SLOT(documentWasModified()));//点击断点区域 绑定有关断点的函数
     connect(textEdit,SIGNAL(cursorPositionChanged(int,int)),this,SLOT(do_cursorChanged()));//实时显示当前光标所在行函数
 
@@ -110,6 +118,7 @@ void MainWindow::bindSignals(){
 
     //键盘监听
     connect(keyPressEater, SIGNAL(keyPressSiganl_puncComplete(int)), this, SLOT(handlePuncComplete(int)));
+    connect(textEdit,SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)),this,SLOT(jumpDefination(int,int,Qt::KeyboardModifiers)));
 }
 
 
@@ -399,7 +408,7 @@ void MainWindow::all_compile(){
         //qDebug()<<path;
 
         //进行拼接
-        QList<QString> headList = findHead();//BUG 没有头文件
+        QList<QString> headList = findHead();
         qDebug()<<headList.size();
         QString head;
         for(int i=0;i<headList.size();i++){
@@ -1334,6 +1343,7 @@ void MainWindow::debugSlot(){
 /*
  * author lzy
  * description 行代码格式化
+ * BUG ++,-- 光标位置
  * date 2019/9/9
  * */
 void MainWindow::lineFormatting(int linenum){//传入行号
@@ -1389,5 +1399,58 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 break;
             }
         }
+    }
+}
+/*
+ * author zll
+ * description 函数高亮
+ * date 2019/9/8
+ * */
+void MainWindow::funcHighlighter(){
+    QString text = textEdit -> text();
+    int line=0,index=0;
+    int sz = text.size();
+    textEdit->lineIndexFromPosition(sz,&line,&index);
+    textEdit->clearIndicatorRange(0,0,line,index,indicNum);
+    QRegExp re("([_a-zA-Z]\\w*)(\\s*\\([^\\)]*\\))");
+    int pos = text.indexOf(re);
+    while(pos>=0){
+        QRegExp re1("(\\w*)\\s*" + re.cap(1) );
+        if( text.indexOf(re1)!= -1 && iconCPP.count(" " + re1.cap(1)  + " " )&& iconCPP.count(" " + re.cap(1) + " ") == 0 && re.cap(1) != "main"){
+         //int func(int,int)
+           // qDebug()<<re1.capturedTexts();
+            line=0,index=0;
+           // qDebug()<<re.capturedTexts();
+            textEdit->lineIndexFromPosition(pos,&line,&index);
+            textEdit->fillIndicatorRange(line,index,line,index+re.cap(1).size(),indicNum);
+        }
+
+        pos = text.indexOf(re,pos+re.matchedLength());
+    }
+}
+/*
+ * author zll
+ * description 函数跳转
+ * BUG 不能跳转
+ * date 2019/9/8
+ * */
+void MainWindow::jumpDefination(int line,int index, Qt::KeyboardModifiers  state){
+     textEdit->setCursorPosition(line,index + 2);
+    if(QApplication::keyboardModifiers ()  == Qt::ControlModifier){
+        QString name = textEdit->wordAtLineIndex(line,index),text = textEdit->text(),textLine = textEdit->text(line);
+        QRegExp re;
+        if(textLine.count("{") || textLine.count(";")==0 || textLine.indexOf(QRegExp(name+"\\s*\\(")) == -1)
+            re.setPattern(name);
+        else
+            re .setPattern(name + "\\s*\\([^\\)]*\\)\\s*\\{");
+        int pos = text.indexOf(re);
+
+        if(pos != -1){
+            int l,i;
+            textEdit->lineIndexFromPosition(pos,&l,&i);
+            textEdit->setCursorPosition(l,i);
+
+        }
+
     }
 }

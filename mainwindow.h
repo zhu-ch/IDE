@@ -109,6 +109,9 @@ public slots:
     void showColor();
     void showFont();
 
+    void funcHighlighter();
+    void jumpDefination(int line,int index, Qt::KeyboardModifiers state);
+
     void handlePuncComplete(int);
     void Annotation();
 
@@ -229,6 +232,10 @@ private:
     //debug
     std::vector<int> breakpoints;//断点集合
     DebugDialog debugDialog;//debug窗口
+
+    //函数高亮
+    int indicNum;
+    QString iconCPP;//cpp关键字字符合集
 };
 
 #endif
