@@ -1,0 +1,14 @@
+#include <stdio.h>
+#include <stdlib.h> 
+struct node {
+	int a;
+	int b;
+	char c;
+};
+
+int main() {
+	struct node* aaa;
+	aaa->a = 1;
+	printf("%d",aaa->a);
+	return 0;
+}
