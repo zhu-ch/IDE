@@ -1326,13 +1326,12 @@ void MainWindow::handlePuncComplete(int key){
     case Qt::Key_Enter://两个键都是监听回车
     case Qt::Key_Return:
         this->textEdit->insert(tr("\n"));
-        Enter_Formatting(cursorLine,cursorIndex);
-        this->textEdit->setCursorPosition(cursorLine+1, 0);
+        Enter_Formatting(cursorLine);
         return;
      case 59://;
-             this->textEdit->insert(tr(";"));
-            lineFormatting(cursorLine);//行末尾输入；进行 行格式化
-            return;
+        this->textEdit->insert(tr(";"));
+        lineFormatting(cursorLine);
+        return;
     default:
         break;
     }
@@ -1470,46 +1469,127 @@ void MainWindow::clearMarker(){
 /*
  * author lzy
  * description 行代码格式化
- * BUG 缩进
  * date 2019/9/9
  * */
 void MainWindow::lineFormatting(int linenum){//传入行号
     QList<QString> keyword_table;
     keyword_table<<"+"<<"-"<<"*"<<"/"<<"("<<")"<<"="<<"<"<<">"<<","<<";";
-    //int last_indexnum=-1;//存储最后一次进行修改的位置，在此位置打回车
-    for(int indexnum=0;indexnum<200;indexnum++){//默认一行不超过200个字符
+    int sum_indexnum=0;//这一行总字符数
+
+    sum_indexnum=textEdit->text(linenum).size();
+    for(int indexnum=0;indexnum<sum_indexnum;indexnum++){//默认一行不超过200个字符
         textEdit->setSelection(linenum,indexnum,linenum,indexnum+1);
         for(int i=0;i<keyword_table.size();i++){
-            if(textEdit->selectedText()=="+"){//++和--单独处理
+            if(textEdit->selectedText()=="+"){//+=、++单独处理
                 textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
                 if(textEdit->selectedText()==" "||textEdit->selectedText()=="+");//先看是否已有空格或+，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
-                if(textEdit->selectedText()==" "||textEdit->selectedText()=="+");//先看是否已有空格，防止重复添加
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="+"||textEdit->selectedText()=="=");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 break;
             }
-            else if(textEdit->selectedText()=="-"){//++和--单独处理
+            else if(textEdit->selectedText()=="-"){//-=、--单独处理
                 textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
                 if(textEdit->selectedText()==" "||textEdit->selectedText()=="-");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
-                if(textEdit->selectedText()==" "||textEdit->selectedText()=="-");//先看是否已有空格，防止重复添加
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="-"||textEdit->selectedText()=="="||textEdit->selectedText()==">");//先看是否已有空格，防止重复添加
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                break;
+            }
+            else if(textEdit->selectedText()=="="){//+=,-=,*=,/=单独处理
+                textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="-"||textEdit->selectedText()=="+"||textEdit->selectedText()=="*"||textEdit->selectedText()=="/");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
+                if(textEdit->selectedText()==" ");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum+1);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                break;
+            }
+            else if(textEdit->selectedText()==">"){//->单独处理
+                textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="-");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
+                if(textEdit->selectedText()==" ");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum+1);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                break;
+            }
+            else if(textEdit->selectedText()=="*"){//*=单独处理
+                textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
+                if(textEdit->selectedText()==" ");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="=");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum+1);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                break;
+            }
+            else if(textEdit->selectedText()=="/"){// /=单独处理
+                textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);//先加左边空格
+                if(textEdit->selectedText()==" ");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum);
+                    indexnum++;
+                    sum_indexnum++;
+                    //last_indexnum=indexnum;
+                }
+                textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
+                if(textEdit->selectedText()==" "||textEdit->selectedText()=="=");//先看是否已有空格，防止重复添加
+                else {
+                    textEdit->insertAt(" ",linenum,indexnum+1);
+                    indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 break;
@@ -1520,6 +1600,7 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 else {
                     textEdit->insertAt(" ",linenum,indexnum);
                     indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 textEdit->setSelection(linenum,indexnum+1,linenum,indexnum+2);//再加右边空格
@@ -1527,16 +1608,17 @@ void MainWindow::lineFormatting(int linenum){//传入行号
                 else {
                     textEdit->insertAt(" ",linenum,indexnum+1);
                     indexnum++;
+                    sum_indexnum++;
                     //last_indexnum=indexnum;
                 }
                 break;
             }
         }
     }
-    for(int i=200;i>=0;i--){
+    for(int i=sum_indexnum;i>=0;i--){
         textEdit->setSelection(linenum,i,linenum,i+1);
         if(textEdit->selectedText()==";"){
-            this->textEdit->setCursorPosition(linenum, i+1);
+            this->textEdit->setCursorPosition(linenum, i+2);
             return;
         }
     }
@@ -1555,21 +1637,58 @@ void MainWindow::Formatting_All(){
         lineFormatting(i);
     }
 }
-void MainWindow::Enter_Formatting(int linenum,int indexnum){
-     textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);
-     if(textEdit->selectedText()=="{")
-     this->textEdit->insert(tr("\n"));
-     for(int i=0;i<200;i++){//添加头文件规范功能
-          textEdit->setSelection(linenum,i,linenum,i+1);
-          if(textEdit->selectedText()=="#"){
-              textEdit->setSelection(linenum,i+8,linenum,i+9);
-              if(textEdit->selectedText()!=" ")
-                  this->textEdit->insertAt(tr(" "),linenum,i+8);
-              return;
-          }
-      }
+void MainWindow::Enter_Formatting(int linenum){//行回车规范
+    int sum_indexnum=0;//这一行总字符数
+    sum_indexnum=textEdit->text(linenum).size();
+    for(int i=0;i<sum_indexnum;i++){//顺便添加头文件规范功能
+        textEdit->setSelection(linenum,i,linenum,i+1);
+        if(textEdit->selectedText()=="#"){
+            textEdit->setSelection(linenum,i+8,linenum,i+9);
+            if(textEdit->selectedText()!=" ")
+                this->textEdit->insertAt(tr(" "),linenum,i+8);
+            this->textEdit->setCursorPosition(linenum+1, 0);
+            return;
+        }
+    }
+
+     QString temp=textEdit->text(linenum);
+     qDebug()<<temp.size();
+     //textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);
+     if(temp.at(temp.size()-2)=='{')//字符串末尾是回车，倒数第二应该是{
+     {   Line_Indent(linenum,1);
+        // if(textEdit->text(linenum+1).at(textEdit->text(linenum+1).size()-1)=='}')//这里是为了分辨是在创建{}还是统一检查规范
+         this->textEdit->insert(tr("\n"));
+         Line_Indent(linenum+1,-1);
+         Line_Indent(linenum,1);
+     }
+     else
+         Line_Indent(linenum,0);
 
 }
+/*
+ * author lzy
+ * description 行首缩进
+ * date 2019/9/10
+ * */
+void MainWindow::Line_Indent(int linenum,int flag){//传入的是敲回车的行，要缩进的是下一行
+    int sum_indexnum=0;//这一行总字符数
+    int tab_num=0;//这一行的前置空格数
+    int tab_num_new=0;//下一行需要添加的前置空格数，因为或许前面已经有了
+    sum_indexnum=textEdit->text(linenum).size();
+    QString temp=textEdit->text(linenum);
+    tab_num=temp.count("\t");
+    if(flag==1)
+        tab_num++;//新的{要额外缩进
+    if(flag==-1)
+        tab_num--;//新的{要额外缩进
+    tab_num_new=tab_num-textEdit->text(linenum+1).count("\t");
+    qDebug()<<tab_num;
+    for(int i=0;i<tab_num_new;i++){
+        this->textEdit->insertAt(tr("\t"),linenum+1,i);
+    }
+    this->textEdit->setCursorPosition(linenum+1, tab_num);
+}
+
 /*
  * author zll
  * description 函数高亮
