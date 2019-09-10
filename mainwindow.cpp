@@ -1626,7 +1626,6 @@ void MainWindow::lineFormatting(int linenum){//传入行号
 /*
  * author lzy
  * description 整体代码格式化
- * TODO 缩进
  * date 2019/9/9
  * */
 void MainWindow::Formatting_All(){
@@ -1636,7 +1635,16 @@ void MainWindow::Formatting_All(){
     for(int i=0;i<line_to;i++){
         lineFormatting(i);
     }
+    for(int i=0;i<line_to-1;i++){
+        if(textEdit->text(i).at(textEdit->text(i).size()-2)=='{')//字符串末尾是回车，倒数第二才应该是{
+            Line_Indent(i,1);
+        else if(textEdit->text(i+1).at(textEdit->text(i+1).size()-2)=='}')
+            Line_Indent(i,-1);
+        else
+            Line_Indent(i,0);
+    }
 }
+
 void MainWindow::Enter_Formatting(int linenum){//行回车规范
     int sum_indexnum=0;//这一行总字符数
     sum_indexnum=textEdit->text(linenum).size();
