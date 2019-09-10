@@ -23,5 +23,7 @@
         <file>images/all-run.png</file>
         <file>images/compile_run.png</file>
         <file>images/debug.png</file>
+        <file>images/format.png</file>
+        <file>images/annotation.png</file>
     </qresource>
 </RCC>

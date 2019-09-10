@@ -119,7 +119,7 @@ void MainWindow::bindSignals(){
 
     //键盘监听
     connect(keyPressEater, SIGNAL(keyPressSiganl_puncComplete(int)), this, SLOT(handlePuncComplete(int)));
-    connect(textEdit,SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)),this,SLOT(jumpDefination(int,int,Qt::KeyboardModifiers)));
+    connect(textEdit,SIGNAL(indicatorReleased (int, int, Qt::KeyboardModifiers)),this,SLOT(jumpDefination(int,int,Qt::KeyboardModifiers)));
 
     //更新单步执行
     connect(&debugDialog, SIGNAL(signalUpdateMarker(int)), this, SLOT(updateLineNumberSlot(int)));
@@ -727,6 +727,23 @@ void MainWindow::createActions()
     connect(changeAct, SIGNAL(triggered()),this,SLOT(change_name()));
 
 
+    //设置注释
+//    annotation = new QAction(QIcon(":/images/annotation.png"),tr("&annotation"),this);
+//    QShortcut* shortcut = new QShortcut(QKeySequence("Shift+Ctrl+/"),this);
+//    connect(shortcut,SIGNAL(activated()),this,SLOT(Annotation()));
+    annotation = new QAction(QIcon(":/images/annotation.png"),tr("&annotation"),this);
+    annotation->setShortcut(tr("Ctrl+Shift+/"));
+    annotation->setStatusTip(tr("annotation"));
+    connect(annotation, SIGNAL(triggered()),this,SLOT(Annotation()));
+
+
+    //整体代码格式化
+    allFormattingAct = new QAction(QIcon(":/images/format.png"),tr("&Formatting"),this);
+    allFormattingAct->setShortcut(tr("F3"));
+    allFormattingAct->setStatusTip(tr("Formatting"));
+    connect(allFormattingAct, SIGNAL(triggered()), this, SLOT(Formatting_All()));
+
+
     //编译
     compileAct = new QAction(QIcon(":/images/compile.png"),tr("&Compile"),this);
     compileAct->setShortcut(tr("Ctrl+B"));
@@ -792,10 +809,6 @@ void MainWindow::createActions()
             cutAct, SLOT(setEnabled(bool)));
     connect(textEdit, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
-    //设置注释
-    annotation=new QAction(this);
-    QShortcut* shortcut = new QShortcut(QKeySequence("Shift+Ctrl+/"),this);
-    connect(shortcut,SIGNAL(activated()),this,SLOT(Annotation()));
 }
 
 /*
@@ -827,6 +840,8 @@ void MainWindow::createMenus()
     editMenu->addAction(replaceAct);
     editMenu->addAction(findAct);
     editMenu->addAction(changeAct);
+    editMenu->addAction(annotation);
+    editMenu->addAction(allFormattingAct);
 
 
     //编译运行
@@ -877,6 +892,8 @@ void MainWindow::createToolBars()
     editToolBar->addAction(findAct);
     editToolBar->addAction(replaceAct);
     editToolBar->addAction(changeAct);
+    editToolBar->addAction(annotation);
+    editToolBar->addAction(allFormattingAct);
 
     //编译运行
     compileToolBar = addToolBar(tr("Compile"));
@@ -1149,41 +1166,111 @@ void MainWindow::change_name(){
     }
 }
 
+//void MainWindow::chang_all_name(){
+//        std::set<char> chr;
+//        if(chr.empty()) chr.clear();
+//        for(int i=0;i<26;i++){
+//            chr.insert(65+i);
+//            chr.insert(97+i);
+//        }
+//        for(int i=0;i<10;i++){
+//            chr.insert('0'+i);
+//        }
+//        chr.insert('_');
+
+//        QString rplc = lineEdit->text();
+
+//        while(textEdit->findFirst(variableName,0,1,1,1)){
+//            textEdit->replace(rplc) ;
+//        }
+////        QMessageBox *box = new QMessageBox("Notice",
+////                    "Done.",
+////                    QMessageBox::NoIcon,
+////                    QMessageBox::Ok | QMessageBox::Default,
+////                    QMessageBox::Cancel | QMessageBox::Escape,
+////                    0
+////                    );
+//        QMessageBox box;
+//        box.setWindowTitle(tr("Information"));
+//        box.setIcon(QMessageBox::Information);
+//        box.setText(tr("Rename success!"));
+//        box.setStandardButtons(QMessageBox::Yes);
+//          //box->setModal(true);
+//        lineEdit->close();
+//          delete lineEdit;
+//          lineEdit = nullptr;
+//          box.show();
+//          box.exec();
+//}
+
 void MainWindow::chang_all_name(){
-        std::set<char> chr;
-        if(chr.empty()) chr.clear();
-        for(int i=0;i<26;i++){
-            chr.insert(65+i);
-            chr.insert(97+i);
-        }
-        for(int i=0;i<10;i++){
-            chr.insert('0'+i);
-        }
-        chr.insert('_');
+    int line = 0, index = 0,now = 0;
+   textEdit->getCursorPosition(&line,&index);
+   now =textEdit->positionFromLineIndex(line,index);
 
-        QString rplc = lineEdit->text();
+   QString rplc = lineEdit->text();
+   QRegExp re("(\\w+)\\s+[\\,\\w]*" + variableName + "[\\s\\,\\;\\)]+");
+   QString text = textEdit->text();
+   int pos1= text.indexOf(re);
+   int pos2=pos1;
+   while(pos1 != -1 &&  iconCPP.count(" " + re.cap(1) + " ") == 0){
+       pos1= text.indexOf(re,pos1 + re.matchedLength());//find first defination of this name
+   }
+     qDebug()<<re.capturedTexts();
+   if(pos1 != -1){//has defination
+           pos2 = text.indexOf(re,pos1 + re.matchedLength());//find the threshold-- next defination
+           while(pos2!=-1){
+               qDebug()<<re.capturedTexts();
+               if(iconCPP.count(" " + re.cap(1) + " ") != 0){//has found the next defination
+                   if(pos2 < now)//still not the threshold
+                       pos1 = pos2;
+                   else break;
+               }
+               if(pos2 != -1) pos2 = text.indexOf(re,pos2 + re.matchedLength());
+           }
 
-        while(textEdit->findFirst(variableName,0,1,1,1)){
-            textEdit->replace(rplc) ;
+       textEdit->lineIndexFromPosition(pos1,&line,&index);
+
+       if(pos2 == -1) {
+               textEdit->findFirst(variableName,0,1,1,0,true,line,index);
+               textEdit->replace(rplc) ;
+               while(textEdit->findNext()){
+                   textEdit->replace(rplc);
+               }
+       }
+       else{
+           int lt,it;
+           textEdit->lineIndexFromPosition(pos2,&lt,&it);
+           textEdit->setSelection(line,index,lt,it);
+           textEdit->findFirstInSelection(variableName,0,1,1,0);
+           textEdit->replace(rplc);
+           while(textEdit->findNext()){
+               textEdit->replace(rplc);
+           }
         }
-//        QMessageBox *box = new QMessageBox("Notice",
-//                    "Done.",
-//                    QMessageBox::NoIcon,
-//                    QMessageBox::Ok | QMessageBox::Default,
-//                    QMessageBox::Cancel | QMessageBox::Escape,
-//                    0
-//                    );
-        QMessageBox box;
-        box.setWindowTitle(tr("Information"));
-        box.setIcon(QMessageBox::Information);
-        box.setText(tr("Rename success!"));
-        box.setStandardButtons(QMessageBox::Yes);
-          //box->setModal(true);
-        lineEdit->close();
-          delete lineEdit;
-          lineEdit = nullptr;
-          box.show();
-          box.exec();
+   }
+   else{
+       while(textEdit->findFirst(variableName,0,1,1,0,true)){
+           textEdit->replace(rplc) ;
+       }
+   }
+
+   QMessageBox *box = new QMessageBox("Notice",
+               "Done.",
+               QMessageBox::NoIcon,
+               QMessageBox::Ok | QMessageBox::Default,
+               QMessageBox::Cancel | QMessageBox::Escape,
+               0
+               );
+     box->setModal(true);
+
+     lineEdit->close();
+     delete lineEdit;
+     lineEdit = nullptr;
+     box->show();
+
+     box->exec();
+     textEdit->setCursorPosition(0,0);
 }
 
 /*
@@ -1242,7 +1329,7 @@ void MainWindow::handlePuncComplete(int key){
         return;
      case 59://;
              this->textEdit->insert(tr(";"));
-            lineFormatting(cursorLine);
+            lineFormatting(cursorLine);//行末尾输入；进行 行格式化
             return;
     default:
         break;
@@ -1382,7 +1469,6 @@ void MainWindow::clearMarker(){
  * author lzy
  * description 行代码格式化
  * BUG 缩进
- * TODO 头文件中间的空格
  * date 2019/9/9
  * */
 void MainWindow::lineFormatting(int linenum){//传入行号
@@ -1453,6 +1539,12 @@ void MainWindow::lineFormatting(int linenum){//传入行号
         }
     }
 }
+/*
+ * author lzy
+ * description 整体代码格式化
+ * TODO 缩进
+ * date 2019/9/9
+ * */
 void MainWindow::Formatting_All(){
     int index_from,index_to,line_from,line_to;
     textEdit->selectAll();
@@ -1465,6 +1557,16 @@ void MainWindow::Enter_Formatting(int linenum,int indexnum){
      textEdit->setSelection(linenum,indexnum-1,linenum,indexnum);
      if(textEdit->selectedText()=="{")
      this->textEdit->insert(tr("\n"));
+     for(int i=0;i<200;i++){//添加头文件规范功能
+          textEdit->setSelection(linenum,i,linenum,i+1);
+          if(textEdit->selectedText()=="#"){
+              textEdit->setSelection(linenum,i+8,linenum,i+9);
+              if(textEdit->selectedText()!=" ")
+                  this->textEdit->insertAt(tr(" "),linenum,i+8);
+              return;
+          }
+      }
+
 }
 /*
  * author zll
@@ -1496,7 +1598,7 @@ void MainWindow::funcHighlighter(){
 /*
  * author zll
  * description 函数跳转
- * BUG 不能跳转
+ * fix ctrl + 双击跳转
  * date 2019/9/8
  * */
 void MainWindow::jumpDefination(int line,int index, Qt::KeyboardModifiers  state){

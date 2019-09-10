@@ -112,6 +112,8 @@ public slots:
     void funcHighlighter();
     void jumpDefination(int line,int index, Qt::KeyboardModifiers state);
 
+    void Formatting_All();
+
     void handlePuncComplete(int);
     void Annotation();
 
@@ -136,8 +138,7 @@ private:
     bool saveFile(const QString &fileName);
     void setCurrentFileName(const QString &fileName);
     //QString strippedName(const QString &fullFileName);
-    void lineFormatting(int linenumber);//行代码格式化
-    void Formatting_All();
+    void lineFormatting(int linenumber);//行代码格式化（通过；触发）
     void Enter_Formatting(int linenum,int indexnum);
 
     QsciScintilla *textEdit;            //代码编辑框
@@ -177,6 +178,7 @@ private:
     QAction *findAct;//查找
     QAction *changeAct;//更改变量
     QAction *annotation;//添加注释
+    QAction *allFormattingAct;//整体注释
 
     //帮助
     QMenu *helpMenu;
