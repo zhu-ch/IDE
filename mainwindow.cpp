@@ -393,7 +393,8 @@ void MainWindow::all_compile(){
         fclose(p1);
         QString cmd;
 
-        cmd = "g++ -o "+filename+".exe -g";
+        //cmd = "g++ -o "+filename+".exe -g";
+        cmd = "g++ -o "+filename+".exe ";
         cmd += filename+".cpp";
 
         //获取路径
@@ -422,7 +423,8 @@ void MainWindow::all_compile(){
             cmd += " "+path+head+".cpp";
         }
 
-        cmd += " 2>"+filename+".log -g";
+        //cmd += " 2>"+filename+".log -g";
+        cmd += " 2>"+filename+".log";
         qDebug()<<cmd.toStdString().data();
         system(cmd.toStdString().data());
 
