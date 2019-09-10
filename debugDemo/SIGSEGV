@@ -8,6 +8,7 @@ struct node {
 
 int main() {
 	struct node* aaa;
+	//struct node* aaa = (struct node*) malloc ( sizeof ( struct node ) ) ;
 	aaa->a = 1;
 	printf("%d",aaa->a);
 	return 0;
