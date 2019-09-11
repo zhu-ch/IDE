@@ -1,6 +1,6 @@
 #include<stdio.h>
 int func(int a, int b) ;
-int main{
+int main(){
     int a; 
     int b; 
 
