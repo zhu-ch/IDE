@@ -25,5 +25,6 @@
         <file>images/debug.png</file>
         <file>images/format.png</file>
         <file>images/annotation.png</file>
+        <file>images/annotate.png</file>
     </qresource>
 </RCC>

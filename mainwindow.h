@@ -122,6 +122,10 @@ public slots:
     void updateLineNumberSlot(int);
     void clearMarker();
 
+    //新需求
+    void recordPos();
+    void annotate_hide_and_show();
+
 private:
     void bindSignals();
     void setTextEdit();                             //代码编辑区
@@ -244,6 +248,15 @@ private:
     //函数高亮
     int indicNum;
     QString iconCPP;//cpp关键字字符合集
+
+    //新需求
+    QAction *annotateHideAct;
+    bool isAnnotationHide;
+    struct antt{
+        int pos;
+        QString an;
+    };
+    std::vector<antt> annotate;
 };
 
 #endif

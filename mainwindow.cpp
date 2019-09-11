@@ -21,8 +21,6 @@ const char * QscilexerCppAttach::keywords(int set) const
     return 0;
 }
 
-
-
 MainWindow::MainWindow()
 {
     textEdit = new QsciScintilla;
@@ -35,7 +33,6 @@ MainWindow::MainWindow()
     createActions();//点击按钮与函数进行绑定
     createMenus();//菜单栏
     createToolBars();//工具栏
-    //createStatusBar();//状态栏
     init_statusBar();//状态栏
     bindSignals();//绑定信号
     mainLayoutV = new QVBoxLayout;
@@ -46,21 +43,21 @@ MainWindow::MainWindow()
     //树形控件
     //QSplitter *splitter = new QSplitter;
     //QDirModel *model = new QDirModel;
-//    myqtreeview = new MyQTreeView(splitter);
+    //myqtreeview = new MyQTreeView(splitter);
     myqtreeview = new MyQTreeView();
     myqtreeview->model = new QDirModel;
     myqtreeview->setModel(myqtreeview->model);
-    fileDir="C:\\Users\\Zhangjiaming\\Desktop";
+    fileDir = "C:\\Users\\Zhangjiaming\\Desktop";
     myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
-    myqtreeview->setColumnWidth(0,280);
+    myqtreeview->setColumnWidth(0, 280);
     myqtreeview->hideColumn(1);
     myqtreeview->hideColumn(2);
     myqtreeview->setMaximumWidth(400);
-    connect(myqtreeview,SIGNAL(doubleClicked(const QModelIndex& )),this,SLOT(myTreeViewOpenFile(QModelIndex)));
+    connect(myqtreeview, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(myTreeViewOpenFile(QModelIndex)));
     //设置layout布局
     mainLayoutV->addWidget(textEdit, 0);
     mainLayoutV->addWidget(LogText);
-//    mainLayoutV->addWidget(myqtreeview);//添加树形控件
+    //mainLayoutV->addWidget(myqtreeview);//添加树形控件
     rightAreaWidget->setLayout(mainLayoutV);
     mainLayoutH->addWidget(myqtreeview);
     mainLayoutH->addWidget(rightAreaWidget);
@@ -72,28 +69,38 @@ MainWindow::MainWindow()
     setCurrentFileName("");
     move(0, 0);
 
-    indicNum =  textEdit->indicatorDefine(QsciScintilla::TextColorIndicator);//function highlighter
-    textEdit -> setIndicatorForegroundColor(Qt::darkYellow,indicNum);//function color
-    textEdit -> setIndicatorHoverStyle( QsciScintilla::ThinCompositionIndicator,indicNum);
-    textEdit->setIndicatorHoverForegroundColor(Qt::blue,indicNum);
+    indicNum = textEdit->indicatorDefine(QsciScintilla::TextColorIndicator);//function highlighter
+    textEdit->setIndicatorForegroundColor(Qt::darkYellow, indicNum);//function color
+    textEdit->setIndicatorHoverStyle(QsciScintilla::ThinCompositionIndicator, indicNum);
+    textEdit->setIndicatorHoverForegroundColor(Qt::blue, indicNum);
     iconCPP = textLexer->keywords(1);
     iconCPP += textLexer->keywords(3);
+
+    isAnnotationHide = false;
 }
-//关闭窗口事件
-void MainWindow::closeEvent(QCloseEvent *event)
-{
+
+/*
+ * author zjm
+ * description 关闭窗口事件
+ * date 2019/8/26
+ * */
+void MainWindow::closeEvent(QCloseEvent *event){
     if (maybeSave()) {//当关闭时 提示是否保存后 用户选择保存（并成功）或不保存
         writeSettings();
         event->accept();
-    } else {//当关闭时 提示是否保存后 用户选择取消
-        event->ignore();
     }
+    else //当关闭时 提示是否保存后 用户选择取消
+        event->ignore();
 }
-//ctrl+wheel 字体放大缩小
-void MainWindow::wheelEvent(QWheelEvent *event)
-{
-    if(QApplication::keyboardModifiers () == Qt::ControlModifier){
-        if(event->delta()>0)//鼠标往前转
+
+/*
+ * author zjm
+ * description ctrl+wheel 字体放大缩小
+ * date 2019/8/26
+ * */
+void MainWindow::wheelEvent(QWheelEvent *event){
+    if (QApplication::keyboardModifiers() == Qt::ControlModifier) {
+        if (event->delta() > 0)//鼠标往前转
             textEdit->zoomIn();//放大
         else
             textEdit->zoomOut();//缩小
@@ -124,6 +131,9 @@ void MainWindow::bindSignals(){
     //更新单步执行
     connect(&debugDialog, SIGNAL(signalUpdateMarker(int)), this, SLOT(updateLineNumberSlot(int)));
     connect(&debugDialog, SIGNAL(signalClearMarker()), this, SLOT(clearMarker()));
+
+    //新需求
+    connect(textEdit,SIGNAL(textChanged()),this,SLOT(recordPos()));
 }
 
 
@@ -454,9 +464,8 @@ void MainWindow::all_run(){
     }
 }
 
-//关于 ok
-void MainWindow::about()
-{
+//关于
+void MainWindow::about(){
    QMessageBox::about(this, tr("About us"),
             tr("MiniIDE C语言编辑器 开发团队"
                "1120173305 张佳明\n"
@@ -466,8 +475,7 @@ void MainWindow::about()
                "1120171491 蒋雨彤\n"));
 }
 
-void MainWindow::documentWasModified()
-{
+void MainWindow::documentWasModified(){
     setWindowModified(textEdit->isModified());
 }
 
@@ -745,6 +753,12 @@ void MainWindow::createActions()
     allFormattingAct->setStatusTip(tr("Formatting"));
     connect(allFormattingAct, SIGNAL(triggered()), this, SLOT(Formatting_All()));
 
+    //新需求
+    annotateHideAct = new QAction(QIcon(":/images/annotate.png"),tr("&HideOrShowAnnotate"),this);
+    annotateHideAct->setShortcut(tr("F8"));
+    annotateHideAct->setStatusTip(tr("Hide or show all annotations"));
+    connect(annotateHideAct,SIGNAL(triggered()),this,SLOT(annotate_hide_and_show()));
+
 
     //编译
     compileAct = new QAction(QIcon(":/images/compile.png"),tr("&Compile"),this);
@@ -844,6 +858,7 @@ void MainWindow::createMenus()
     editMenu->addAction(changeAct);
     editMenu->addAction(annotation);
     editMenu->addAction(allFormattingAct);
+    editMenu->addAction(annotateHideAct);
 
 
     //编译运行
@@ -1724,6 +1739,7 @@ void MainWindow::funcHighlighter(){
         pos = text.indexOf(re,pos+re.matchedLength());
     }
 }
+
 /*
  * author zll
  * description 函数跳转
@@ -1748,5 +1764,121 @@ void MainWindow::jumpDefination(int line,int index, Qt::KeyboardModifiers  state
 
         }
 
+    }
+}
+
+/*
+ * author zll zch
+ * description 监听键盘 - 新需求子函数
+ * date 2019/9/10
+ * */
+void MainWindow::recordPos(){
+    if(isAnnotationHide){
+        int line,index;
+        textEdit->getCursorPosition(&line,&index);
+        int pos = textEdit->positionFromLineIndex(line,index);
+        if(!annotate.empty()) {
+          for(int i=0;i<annotate.size();i++){
+              if(pos < annotate[i].pos)
+                  annotate[i].pos++;
+          }
+        }
+    }
+}
+
+/*
+ * author zll zch
+ * description 新需求子函数
+ * date 2019/9/10
+ * */
+void MainWindow::annotate_hide_and_show() {
+    if(!isAnnotationHide){//隐藏
+        int line = 0, index = 0, vectorSize = 0;
+        QString text = textEdit->text();
+        antt temp;
+
+        QRegExp re_several("/\\*((?!\\*/).)*\\*/"), re_single("//[^\\n\\r]*");
+        text = textEdit->text();
+        int pos_several = text.indexOf(re_several), pos_single = text.indexOf(re_single);
+        while (pos_several >= 0 || pos_single >= 0) {
+            if (pos_several != -1 && (pos_several < pos_single || pos_single == -1)) {
+                textEdit->lineIndexFromPosition(pos_several, &line, &index);
+                int lineto, indexto;
+                textEdit->lineIndexFromPosition(pos_several + re_several.matchedLength(), &lineto, &indexto);
+                temp.pos = pos_several; temp.an = re_several.cap(0);
+                if (lineto != line)
+                    indexto += 2;
+
+                annotate.push_back(temp); vectorSize++;
+                qDebug() << "pos:" << pos_several;
+                qDebug() << "delete annotate:" << annotate[vectorSize - 1].an;
+
+                textEdit->setSelection(line, index, lineto, indexto);
+                textEdit->removeSelectedText();
+
+                QString textLine = textEdit->text(line);
+                if (textLine.indexOf(QRegExp("^[\\n\\r]$")) != -1) {
+                    //只要有用户输入的不在注释范围内的空白字符那么就不会删除这一行。
+                    //换行符除非与/**/的结尾连在一起，不然也不会删除
+                    annotate[vectorSize - 1].pos;
+                    annotate[vectorSize - 1].an.append("\n");
+                    textEdit->setSelection(line, 0, line, 1);
+                    textEdit->removeSelectedText();
+                }
+
+                text = textEdit->text();
+                pos_single = text.indexOf(re_single, pos_several);
+                pos_several = text.indexOf(re_several, pos_several);
+            }
+
+            if (pos_single != -1 && (pos_several > pos_single || pos_several == -1)) {
+                qDebug() << re_single.capturedTexts();
+                textEdit->lineIndexFromPosition(pos_single, &line, &index);//获取行列
+                //把注释放到vector变量里
+                temp.pos = pos_single; temp.an = re_single.cap(0); annotate.push_back(temp); vectorSize++;
+                qDebug() << "delete annotate:" << annotate[vectorSize - 1].an;
+                qDebug() << "pos:" << pos_single;
+                qDebug() << "vector pos:" << annotate[vectorSize - 1].pos;
+                textEdit->setSelection(line, index, line, index + re_single.cap(0).size());
+                textEdit->cut();//选定删除（没有找到删除函数，但是剪切一样可以)
+                QString textLine = textEdit->text(line);
+
+                if (textLine.indexOf(QRegExp("^[\\n\\r]$")) != -1) {
+                    //只要有用户输入的不在注释范围内的空白字符那么就不会删除这一行。
+                    //换行符除非与/**/的结尾连在一起，不然也不会删除
+                    annotate[vectorSize - 1].an += "\n";
+                    textEdit->setSelection(line, 0, line, 1);
+                    textEdit->cut();
+                }
+
+                text = textEdit->text();//重新获取删除后的文本
+                qDebug() << "text:" << text;
+                pos_several = text.indexOf(re_several, pos_single);
+                pos_single = text.indexOf(re_single, pos_single);//继续查找
+            }
+        }
+
+        for (int i = 0; i < annotate.size(); i++) {
+            qDebug() << "pos:" << annotate[i].pos << "  " << "annotate:" << annotate[i].an;
+        }
+        isAnnotationHide = true;
+        return;
+    }
+
+
+    if (isAnnotationHide) {//显示
+        if (!annotate.empty()) {
+            int line, index;
+            for (int i = annotate.size() - 1; i >= 0; i--) {
+                qDebug() << "pos :" << annotate[i].pos;
+                qDebug() << "textSize:" << textEdit->text().size();
+                if (i != annotate.size() - 1) qDebug() << "text:" << textEdit->text(0, annotate[i].pos);
+                textEdit->lineIndexFromPosition(annotate[i].pos, &line, &index);
+                textEdit->insertAt(annotate[i].an, line, index);
+            }
+        }
+        annotate.clear();
+        isAnnotationHide = false;
+        return;
     }
 }
