@@ -289,7 +289,7 @@ void MainWindow::myrun(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe && g:/pressAnyKeyToContinue.exe && pause";
+        QString cmd = curFile + ".exe && D:/sort/course/2019-2020-0-software/IDE/pressAnyKeyToContinue.exe && pause";
         RunThread *rthread = new RunThread(cmd);
         connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
         rthread->start();
@@ -330,7 +330,7 @@ void MainWindow::compile_run(){
         //判断是否编译成功
         QString LOG = filename.toStdString().data();
         if(LoadLogFile(LOG+".log")){
-            QString cmd = curFile + ".exe && g:/pressAnyKeyToContinue.exe && pause";
+            QString cmd = curFile + ".exe && D:/sort/course/2019-2020-0-software/IDE/pressAnyKeyToContinue.exe && pause";
             RunThread *rthread = new RunThread(cmd);
             connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
             rthread->start();
@@ -455,7 +455,7 @@ void MainWindow::all_run(){
     QString LOG = curFile.toStdString().data();
     if(LoadLogFile(LOG+".log")){
         qDebug()<<"可以运行";
-        QString cmd = curFile + ".exe && G:/pressAnyKeyToContinue.exe && pause";
+        QString cmd = curFile + ".exe && D:/sort/course/2019-2020-0-software/IDE/pressAnyKeyToContinue.exe && pause";
         RunThread *rthread = new RunThread(cmd);
         connect(rthread, &RunThread::finished, rthread, &QObject::deleteLater);
         rthread->start();
