@@ -1,0 +1,12 @@
+//this is an annotation
+
+//this is an annotation
+//this is another annotation
+this is NOT an annotation;
+/*this is another annotation, too*/
+this is NOT an annotation, either;//but this one is
+/*
+ * this is an annotation£¬ too
+ */
+//this is also an annotation
+this is a normal text;/*but this is annotation*/this is also annotate;
