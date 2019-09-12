@@ -1840,7 +1840,7 @@ void MainWindow::annotate_hide_and_show() {
                 qDebug() << "pos:" << pos_single;
                 qDebug() << "vector pos:" << annotate[vectorSize - 1].pos;
                 textEdit->setSelection(line, index, line, index + re_single.cap(0).size());
-                textEdit->cut();//选定删除（没有找到删除函数，但是剪切一样可以)
+                textEdit->removeSelectedText();//选定删除（没有找到删除函数，但是剪切一样可以)
                 QString textLine = textEdit->text(line);
 
                 if (textLine.indexOf(QRegExp("^[\\n\\r]$")) != -1) {
@@ -1848,7 +1848,7 @@ void MainWindow::annotate_hide_and_show() {
                     //换行符除非与/**/的结尾连在一起，不然也不会删除
                     annotate[vectorSize - 1].an += "\n";
                     textEdit->setSelection(line, 0, line, 1);
-                    textEdit->cut();
+                    textEdit->removeSelectedText();
                 }
 
                 text = textEdit->text();//重新获取删除后的文本
