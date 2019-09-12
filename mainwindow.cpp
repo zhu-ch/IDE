@@ -47,7 +47,7 @@ MainWindow::MainWindow()
     myqtreeview = new MyQTreeView();
     myqtreeview->model = new QDirModel;
     myqtreeview->setModel(myqtreeview->model);
-    fileDir = "C:\\Users\\Zhangjiaming\\Desktop";
+    fileDir = "D:\\sort\\course\\2019-2020-0-software\\IDE\\Demo";
     myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
     myqtreeview->setColumnWidth(0, 280);
     myqtreeview->hideColumn(1);
