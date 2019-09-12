@@ -1433,6 +1433,7 @@ void MainWindow::myTreeViewOpenFile(QModelIndex index){
     }else{//加载在新窗口
         MainWindow *newMainWindow = new MainWindow();
         newMainWindow->myqtreeview->reset();
+        newMainWindow->fileDir = this->fileDir;
         newMainWindow->myqtreeview->model = new QDirModel;
         newMainWindow->myqtreeview->setModel(myqtreeview->model);
         newMainWindow->myqtreeview->setRootIndex(myqtreeview->model->index(fileDir));
